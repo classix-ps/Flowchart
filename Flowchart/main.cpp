@@ -2,11 +2,49 @@
 
 #include <iostream>
 
+#include <SFML/Graphics.hpp>
+
 enum class State {Default, Text, MovingField};
 
+std::vector<Node>::iterator getClickedNode(std::vector<Node>& nodes, sf::Vector2f pos) {
+  std::vector<Node>::iterator iter;
+  for (iter = nodes.begin(); iter != nodes.end(); iter++) {
+    if (iter->contains(pos)) {
+      break;
+    }
+  }
+
+  return iter;
+}
+
 int main() {
+  sf::Vector2f targetWindowSize(sf::VideoMode::getDesktopMode().width * 0.8, sf::VideoMode::getDesktopMode().height * 0.8);
+
+  sf::Vector2f fieldSize(150.f, 100.f);
+  sf::Vector2f gridSize(fieldSize.x * 1.2, fieldSize.y * 1.4);
+  sf::Vector2u gridCount(12, 9);
+
   // Window
-  sf::RenderWindow window(sf::VideoMode(1920, 1080), "Flowchart Creator");
+  sf::Vector2u origWindowSize(unsigned int(gridSize.x * gridCount.x), unsigned int(gridSize.y * gridCount.y));
+  sf::RenderWindow window(sf::VideoMode(unsigned int(gridSize.x * gridCount.x), unsigned int(gridSize.y * gridCount.y)), "Flowchart Creator");
+
+  // Grid
+  std::vector<sf::VertexArray> grid;
+  sf::VertexArray line(sf::Lines, 2);
+  line[0].color = sf::Color(150, 150, 150);
+  line[1].color = line[0].color;
+  for (size_t i = 1; i < gridSize.x; i++) {
+    line[0].position = sf::Vector2f(gridSize.x * i, 0.f);
+    line[1].position = sf::Vector2f(gridSize.x * i, float(window.getSize().y));
+    grid.push_back(line);
+  }
+  for (size_t i = 1; i < gridSize.y; i++) {
+    line[0].position = sf::Vector2f(0.f, gridSize.y * i);
+    line[1].position = sf::Vector2f(window.getSize().x, float(gridSize.y * i));
+    grid.push_back(line);
+  }
+
+  window.setSize(sf::Vector2u(targetWindowSize));
 
   // Nodes
   std::vector<Node> nodes;
@@ -15,8 +53,6 @@ int main() {
   Node::fieldTmplt.setSize(sf::Vector2f(150.f, 100.f));
   Node::fieldTmplt.setCornersRadius(10.f);
   Node::fieldTmplt.setCornerPointCount(10);
-  Node::fieldTmplt.setFillColor(sf::Color::White);
-  Node::fieldTmplt.setOutlineColor(sf::Color::Black);
   Node::fieldTmplt.setOutlineThickness(5.f);
   Node::fieldTmplt.setOrigin(sf::Vector2f(Node::fieldTmplt.getSize().x / 2, Node::fieldTmplt.getSize().y / 2));
 
@@ -30,7 +66,7 @@ int main() {
 
   State state = State::Default;
   Node* selected = NULL;
-  sf::String input;
+  sf::Vector2f offset;
 
   // Process loop
   while (window.isOpen()) {
@@ -40,25 +76,28 @@ int main() {
       if (event.type == sf::Event::Closed) {
         window.close();
       }
+
+      sf::Vector2f mousePos = sf::Vector2f(sf::Mouse::getPosition(window));
+
       switch (state) {
       case State::Default:
       {
+        // Create/select node
         if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-          sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-
-          std::vector<Node>::iterator iter;
-          for (iter = nodes.begin(); iter != nodes.end(); iter++) {
-            if (iter->contains(sf::Mouse::getPosition(window))) {
-              break;
+          std::vector<Node>::iterator clickedNode = getClickedNode(nodes, mousePos);
+          if (clickedNode != nodes.end()) {
+            if (selected == &(*clickedNode)) {
+              selected->setEdit();
+              state = State::Text;
+            }
+            else {
+              selected = &(*clickedNode);
+              offset = selected->getPosition() - mousePos;
+              state = State::MovingField;
             }
           }
-
-          if (iter != nodes.end()) {
-            selected = &(*iter);
-            state = State::MovingField;
-          }
           else {
-            Node newNode(sf::Mouse::getPosition(window));
+            Node newNode(mousePos);
 
             if (newNode.protrudes(window)) {
               break;
@@ -68,9 +107,9 @@ int main() {
               break;
             }
 
+            newNode.setEdit();
             nodes.push_back(newNode);
             selected = &nodes.back();
-
             state = State::Text;
           }
         }
@@ -79,33 +118,40 @@ int main() {
       };
       case State::Text:
       {
-        if ((event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return)
-          || (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left && !selected->contains(sf::Mouse::getPosition(window)))) {
-          selected->setFillColor(sf::Color(220, 220, 220));
-          input.clear();
+        if (selected == NULL) {
+          std::cout << "Error with selected field" << std::endl;
+          return 0;
+        }
+
+        // Lock in node
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return) {
+          selected->setLock();
+          selected = NULL;
           state = State::Default;
         }
+        // Lock in node, move other node if clicked
+        else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+          if (selected->contains(mousePos)) {
+            offset = selected->getPosition() - mousePos;
+            state = State::MovingField;
+          }
+
+          selected->setLock();
+          std::vector<Node>::iterator clickedNode = getClickedNode(nodes, mousePos);
+          if (clickedNode != nodes.end()) {
+            selected = &(*clickedNode);
+            offset = selected->getPosition() - mousePos;
+            state = State::MovingField;
+          }
+          else {
+            selected = NULL;
+            state = State::Default;
+          }
+        }
+        // Add text to node
         else if (event.type == sf::Event::TextEntered) {
           if (event.text.unicode > 31 && event.text.unicode < 127) {
-            sf::String newInput = input + event.text.unicode;
-            selected->setString(newInput);
-            bool fits = true;
-            while (currentText.getGlobalBounds().width > currentField.getGlobalBounds().width * 0.9 && fits) {
-              unsigned int newCharSize = currentText.getCharacterSize() - 1;
-              if (newCharSize < 12) {
-                currentText.setString(input);
-                fits = false;
-              }
-              else {
-                currentText.setCharacterSize(newCharSize);
-              }
-            }
-            currentText.setOrigin(currentText.getGlobalBounds().width / 2.f, currentText.getGlobalBounds().height / 2.f);
-            currentText.setPosition(currentField.getPosition());
-
-            if (fits) {
-              input = newInput;
-            }
+            selected->appendText(event.text.unicode);
           }
           else if (event.text.unicode == 8) {
             // TODO: backspace with size increase
@@ -116,17 +162,16 @@ int main() {
       };
       case State::MovingField:
       {
-        // TODO: Move field until mouse release
-        if (selectedField == NULL) {
+        if (selected == NULL) {
           std::cout << "Error with selected field" << std::endl;
           return 0;
         }
 
-        if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+        if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
           state = State::Default;
         }
         else {
-          selectedField->setPosition(sf::Vector2f(sf::Mouse::getPosition(window)));
+          selected->setPosition(mousePos + offset);
         }
 
         break;
@@ -135,11 +180,11 @@ int main() {
     }
 
     window.clear(sf::Color::White);
-    for (const sf::RoundedRectangleShape& field : fields) {
-      window.draw(field);
+    for (const sf::VertexArray& line : grid) {
+      window.draw(line);
     }
-    for (const sf::Text& text : texts) {
-      window.draw(text);
+    for (const Node& node : nodes) {
+      node.draw(window);
     }
     window.display();
   }

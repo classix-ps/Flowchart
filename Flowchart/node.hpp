@@ -2,19 +2,27 @@
 
 #include <SFML/Graphics.hpp>
 #include "roundedRectangle.hpp"
+#include "Gui/TextBox.hpp"
 
 class Node {
 public:
   Node();
-  Node(const sf::Vector2i& pos);
-  void draw();
+  Node(const sf::Vector2f& pos);
+  void draw(sf::RenderWindow& window) const;
 
-  bool contains(const sf::Vector2i& pos);
-  bool protrudes(const sf::RenderWindow& window);
-  bool overlaps(const std::vector<Node>& nodes);
+  sf::Vector2f getPosition() const;
 
-  void setFillColor(const sf::Color& color);
-  void setString(sf::String str);
+  void setPosition(const sf::Vector2f& pos);
+  void setEdit();
+  void setLock();
+
+  // Field
+  bool contains(const sf::Vector2f& pos) const;
+  bool protrudes(const sf::RenderWindow& window) const;
+  bool overlaps(const std::vector<Node>& nodes) const;
+
+  // Text
+  void appendText(const sf::String& str);
 
   static sf::RoundedRectangleShape fieldTmplt;
   static sf::Font font;
@@ -22,5 +30,4 @@ public:
 private:
   sf::RoundedRectangleShape field;
   sf::Text text;
-  sf::Vector2i pos;
 };
