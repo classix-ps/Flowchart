@@ -1,17 +1,27 @@
 #include "node.hpp"
 
 sf::RoundedRectangleShape Node::fieldTmplt;
-sf::Font Node::font;
-sf::Text Node::textTmplt;
 
 Node::Node() {
   field = sf::RoundedRectangleShape(fieldTmplt);
-  text = sf::Text(textTmplt);
+
+  sf::Text text("", gui::Theme::getFont());
+  text.setOrigin(text.getLocalBounds().width / 2, text.getLocalBounds().height / 2);
+  textbox.setCallback([&]() {
+    text.setString(textbox.getText());
+    text.setOrigin(text.getLocalBounds().width / 2, text.getLocalBounds().height / 2);
+  });
 }
 
 Node::Node(const sf::Vector2f& pos) {
   field = sf::RoundedRectangleShape(fieldTmplt);
-  text = sf::Text(textTmplt);
+
+  sf::Text text("", gui::Theme::getFont());
+  text.setOrigin(text.getLocalBounds().width / 2, text.getLocalBounds().height / 2);
+  textbox.setCallback([&]() {
+    text.setString(textbox.getText());
+    text.setOrigin(text.getLocalBounds().width / 2, text.getLocalBounds().height / 2);
+  });
 
   field.setPosition(sf::Vector2f(pos));
   text.setPosition(sf::Vector2f(pos));
@@ -19,7 +29,7 @@ Node::Node(const sf::Vector2f& pos) {
 
 void Node::draw(sf::RenderWindow& window) const {
   window.draw(field);
-  window.draw(text);
+  window.draw(textbox);
 }
 
 sf::Vector2f Node::getPosition() const {
@@ -28,17 +38,13 @@ sf::Vector2f Node::getPosition() const {
 
 void Node::setPosition(const sf::Vector2f& pos) {
   field.setPosition(sf::Vector2f(pos));
-  text.setPosition(sf::Vector2f(pos));
+  textbox.setPosition(sf::Vector2f(pos));
 }
 
-void Node::setEdit() {
-  field.setFillColor(sf::Color(230, 230, 230));
-  field.setOutlineColor(sf::Color(204, 0, 0));
-}
+void Node::setState(NodeState state) {
+  switch (state) {
 
-void Node::setLock() {
-  field.setFillColor(sf::Color(230, 230, 230));
-  field.setOutlineColor(sf::Color(0, 0, 0));
+  }
 }
 
 bool Node::contains(const sf::Vector2f& pos) const {
@@ -60,22 +66,4 @@ bool Node::overlaps(const std::vector<Node>& nodes) const {
     }
   }
   return intersects;
-}
-
-void Node::appendText(const sf::String& str) {
-  sf::String orig = text.getString();
-
-  text.setString(orig + str);
-
-  while (text.getGlobalBounds().width > field.getGlobalBounds().width * 0.9) {
-    unsigned int newCharSize = text.getCharacterSize() - 1;
-    if (newCharSize < 14) {
-      text.setString(orig);
-      break;
-    }
-    else {
-      text.setCharacterSize(newCharSize);
-    }
-  }
-  text.setOrigin(text.getGlobalBounds().width / 2.f, text.getGlobalBounds().height / 2.f);
 }
