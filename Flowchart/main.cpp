@@ -9,7 +9,7 @@ int main() {
   Node::fieldTmplt.setCornersRadius(2.f);
   Node::fieldTmplt.setCornerPointCount(10);
   Node::fieldTmplt.setOutlineThickness(1.f);
-  Node::fieldTmplt.setOrigin(sf::Vector2f(Node::fieldTmplt.getSize().x / 2, Node::fieldTmplt.getSize().y / 2));
+  Node::fieldTmplt.setOrigin(Node::fieldTmplt.getSize() / 2.f);
   Node::fieldTmplt.setFillColor(sf::Color(230, 230, 230, 150));
   Node::fieldTmplt.setOutlineColor(sf::Color(0, 0, 0, 150));
 

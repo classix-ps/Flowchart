@@ -35,6 +35,8 @@ public:
   void setArrowOutlinePosition(const sf::Vector2f& pos);
   bool showArrowOutline = false;
 
+  void saveToJson() const;
+
 private:
   std::vector<sf::VertexArray> lines;
   std::vector<Node> nodes;

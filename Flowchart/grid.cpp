@@ -274,3 +274,7 @@ void Grid::setArrowOutlinePosition(const sf::Vector2f& pos) {
 
   arrowOutline.setDestination(pos);
 }
+
+void Grid::saveToJson() const {
+
+}

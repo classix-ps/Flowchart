@@ -73,7 +73,6 @@ void WindowManager::run() {
         view.zoom(zoom);
         window.setView(view);
         globalPos = window.mapPixelToCoords(mousePosPx);
-        hover(globalPos);
       }
       
       switch (state) {
@@ -239,6 +238,10 @@ void WindowManager::run() {
         // Select node
         else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
           grid.select(globalPos);
+        }
+        // Save
+        else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S) {
+          // Save
         }
         else {
           hover(globalPos);
