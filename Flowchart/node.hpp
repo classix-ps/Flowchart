@@ -1,9 +1,12 @@
-#include <SFML/Graphics.hpp>
-#include "roundedRectangle.hpp"
-#include "Gui/TextBox.hpp"
-#include "Gui/Theme.hpp"
+#pragma once
 
-enum class NodeState { Placing, Selected, Locked };
+#include <set>
+#include "conversions.hpp"
+#include "roundedRectangle.hpp"
+//#include "Gui/TextBox.hpp"
+//#include "Gui/Theme.hpp"
+
+enum class NodeState { Placing, Highlighted, Selected, Moving, Locked };
 
 class Node {
 public:
@@ -12,18 +15,26 @@ public:
 
   void draw(sf::RenderWindow& window) const;
 
-  sf::Vector2f getPosition() const;
+  bool contains(const sf::Vector2f& pos) const;
 
   void setPosition(const sf::Vector2f& pos);
-  void setState(NodeState state);
+  void setState(NodeState nodeState);
 
-  bool contains(const sf::Vector2f& pos) const;
-  bool protrudes(const sf::RenderWindow& window) const;
-  bool overlaps(const std::vector<Node>& nodes) const;
+  sf::Vector2f getCenter() const;
+  std::vector<sf::Vector2i> getCells() const;
+  sf::FloatRect getBounds() const;
+  NodeState getState() const;
+
+  void point(size_t i);
+  bool pointsTo(size_t i) const;
 
   static sf::RoundedRectangleShape fieldTmplt;
 
 private:
+  NodeState state;
+
   sf::RoundedRectangleShape field;
-  gui::TextBox textbox;
+  //gui::TextBox textbox;
+
+  std::set<size_t> pointing;
 };

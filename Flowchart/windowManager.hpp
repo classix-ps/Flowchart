@@ -1,7 +1,8 @@
+#pragma once
+
 #include "grid.hpp"
 
-enum class State { View, Add, Connect, Move, MoveNode };
-enum class Cursor { Default, Point, Grab };
+enum class State { View, Add, Connect, Move, MoveNode, Select, SelectNode };
 
 class WindowManager {
 public:
@@ -16,16 +17,22 @@ private:
 
   Grid grid;
 
-  sf::Sprite cursor;
-  std::map<Cursor, sf::Texture> cursorTextures;
+  sf::Cursor cursorDefault;
+  sf::Cursor cursorPointer;
+  sf::Cursor cursorGrab;
+  sf::Cursor cursorCrosshair;
+
+  sf::RectangleShape selectionBox;
 
   State state;
 
-  sf::Vector2f clickPos;
+  sf::Vector2f oldPos;
 
   sf::Vector2f nodeOffset;
 
+  bool selecting = false;
+
   float zoom = 0.2f;
-  //float zoom = 1.f;
-  void zoomViewAt(sf::Vector2i pixel, float zoom);
+
+  void hover(const sf::Vector2f& pos);
 };
