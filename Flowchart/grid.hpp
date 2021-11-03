@@ -13,8 +13,6 @@ public:
   void addNode();
   void addArrow();
 
-  void zoom(float z);
-
   bool startArrow(const sf::Vector2f& pos);
   void select(const sf::Vector2f& pos);
   int grab(const sf::Vector2f& pos);
@@ -42,7 +40,12 @@ public:
   void saveToJson() const;
 
 private:
-  std::vector<sf::VertexArray> lines;
+  int gridSpaces = 20;
+  int nodeCellWidth;
+  int nodeCellHeight;
+
+  sf::VertexArray lineTemplate;
+
   std::vector<Node> nodes;
   std::vector<Arrow> arrows;
 
@@ -53,5 +56,6 @@ private:
   std::vector<size_t> highlights;
   size_t editing = 0;
 
+  sf::Vector2i posToCell(const sf::Vector2f& pos) const;
   bool validCell(const sf::Vector2i& cell) const;
 };

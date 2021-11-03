@@ -4,10 +4,10 @@
 
 int main() {
   // Node template
-  Node::fieldTmplt.setSize(sf::Vector2f(36.f, 20.f));
-  Node::fieldTmplt.setCornersRadius(2.f);
-  Node::fieldTmplt.setCornerPointCount(10);
-  Node::fieldTmplt.setOutlineThickness(1.f);
+  Node::fieldTmplt.setSize(sf::Vector2f(360.f, 200.f));
+  Node::fieldTmplt.setCornersRadius(20.f);
+  Node::fieldTmplt.setCornerPointCount(100);
+  Node::fieldTmplt.setOutlineThickness(10.f);
   Node::fieldTmplt.setOrigin(Node::fieldTmplt.getSize() / 2.f);
   Node::fieldTmplt.setFillColor(sf::Color(230, 230, 230, 150));
   Node::fieldTmplt.setOutlineColor(sf::Color(0, 0, 0, 150));
@@ -26,7 +26,7 @@ int main() {
 
   // Theme template
   gui::Theme::loadFont("../Resources/fonts/tahoma.ttf");
-  gui::Theme::textSize = 11;
+  gui::Theme::textSize = 50;
   gui::Theme::loadTexture("../Resources/theme/texture-default.png");
   gui::Theme::PADDING = 2.f;
 
@@ -34,7 +34,7 @@ int main() {
 
   window.run();
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 /*

@@ -37,7 +37,6 @@ WindowManager::WindowManager(unsigned int width, unsigned int height) : window(s
   // View
   view = window.getDefaultView();
   view.zoom(zoom);
-  grid.zoom(zoom);
 }
 
 void WindowManager::hover(const sf::Vector2f& pos) {
@@ -64,15 +63,14 @@ void WindowManager::run() {
       
       if (event.type == sf::Event::MouseWheelScrolled) {
         if (event.mouseWheelScroll.delta < 0) {
-          zoom = std::min(1.f, zoom + 0.05f);
+          zoom = std::min(6.f, zoom + 0.05f);
         }
         else if (event.mouseWheelScroll.delta > 0) {
-          zoom = std::max(0.05f, zoom - 0.05f);
+          zoom = std::max(0.5f, zoom - 0.05f);
         }
         
         view.setSize(window.getDefaultView().getSize());
         view.zoom(zoom);
-        grid.zoom(zoom);
         window.setView(view);
         globalPos = window.mapPixelToCoords(mousePosPx);
       }

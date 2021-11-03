@@ -1,7 +1,6 @@
 #pragma once
 
 #include <set>
-#include "conversions.hpp"
 #include "roundedRectangle.hpp"
 #include "Gui/Menu.hpp"
 #include "Gui/Theme.hpp"
@@ -21,10 +20,8 @@ public:
 
   void setPosition(const sf::Vector2f& pos);
   void setState(NodeState nodeState);
-  void setScale(float zoom);
 
   sf::Vector2f getCenter() const;
-  std::vector<sf::Vector2i> getCells() const;
   sf::FloatRect getBounds() const;
   NodeState getState() const;
 

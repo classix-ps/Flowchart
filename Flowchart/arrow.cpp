@@ -2,12 +2,12 @@
 
 std::array<float, 8> Arrow::angleTemplate;
 
-Arrow::Arrow() : head{ 4.f, 3 }, directLine{ sf::Quads, 4 } {
+Arrow::Arrow() : head{ 4.f * Node::fieldTmplt.getOutlineThickness(), 3 }, directLine{ sf::Quads, 4 } {
   for (size_t i = 0; i < 4; i++) {
     directLine[i].color = sf::Color(0, 102, 51, 255);
   }
   head.setFillColor(sf::Color(0, 102, 51, 255));
-  head.setOrigin(4.f, 0.f);
+  head.setOrigin(head.getRadius(), 0.f);
   head.setScale(sf::Vector2f(0.8f, 1.f));
 }
 
@@ -25,17 +25,23 @@ void Arrow::setOrigin(const sf::Vector2f& pos) {
 
 void Arrow::setDestination(const sf::Vector2f& pos) {
   sf::Vector2f delta = pos - origin;
+
+  head.setPosition(pos);
+  head.setRotation((atan2(delta.y, delta.x) * 180.f / float(M_PI)) + 90.f);
+
+  sf::FloatRect headBoundingRect = head.getGlobalBounds();
+  sf::Vector2f headCenter(headBoundingRect.left + headBoundingRect.width / 2, headBoundingRect.top + headBoundingRect.height / 2);
+
   float length = sqrt(delta.x * delta.x + delta.y * delta.y);
   sf::Vector2f deltaNorm = delta / length;
   sf::Vector2f deltaNormPerp(-deltaNorm.y, deltaNorm.x);
 
-  directLine[0].position = origin + 0.75f * deltaNormPerp;
-  directLine[1].position = origin - 0.75f * deltaNormPerp;
-  directLine[2].position = pos - 0.75f * deltaNormPerp;
-  directLine[3].position = pos + 0.75f * deltaNormPerp;
+  directLine[0].position = origin + 0.75f * Node::fieldTmplt.getOutlineThickness() * deltaNormPerp;
+  directLine[1].position = origin - 0.75f * Node::fieldTmplt.getOutlineThickness() * deltaNormPerp;
+  directLine[2].position = headCenter - 0.75f * Node::fieldTmplt.getOutlineThickness() * deltaNormPerp;
+  directLine[3].position = headCenter + 0.75f * Node::fieldTmplt.getOutlineThickness() * deltaNormPerp;
 
-  head.setPosition(pos);
-  head.setRotation((atan2(delta.y, delta.x) * 180.f / float(M_PI)) + 90.f);
+  destination = pos;
 }
 
 void Arrow::setOriginNode(size_t index) {
@@ -90,7 +96,7 @@ void Arrow::setHead(const sf::FloatRect& boundingRect) {
   }
   else {
     // Mathematica: Reduce[{a + p == (b + q)*m, p^2 + q^2 == c}, {p, q}]
-    float r = 3.f; // radius of rounded corners
+    float r = Node::fieldTmplt.getCornersRadius() + Node::fieldTmplt.getOutlineThickness(); // radius of rounded corners
     float m = abs(delta.y / delta.x);
     float a = (boundingRect.height / 2 - r);
     float b = (boundingRect.width / 2 - r);
@@ -119,10 +125,10 @@ void Arrow::setHead(const sf::FloatRect& boundingRect) {
   sf::Vector2f deltaNorm = delta / length;
   sf::Vector2f deltaNormPerp(-deltaNorm.y, deltaNorm.x);
 
-  directLine[0].position = origin + 0.75f * deltaNormPerp;
-  directLine[1].position = origin - 0.75f * deltaNormPerp;
-  directLine[2].position = headCenter - 0.75f * deltaNormPerp;
-  directLine[3].position = headCenter + 0.75f * deltaNormPerp;
+  directLine[0].position = origin + 0.75f * Node::fieldTmplt.getOutlineThickness() * deltaNormPerp;
+  directLine[1].position = origin - 0.75f * Node::fieldTmplt.getOutlineThickness() * deltaNormPerp;
+  directLine[2].position = headCenter - 0.75f * Node::fieldTmplt.getOutlineThickness() * deltaNormPerp;
+  directLine[3].position = headCenter + 0.75f * Node::fieldTmplt.getOutlineThickness() * deltaNormPerp;
 }
 
 void Arrow::setDirectLineColor(sf::Color color) {
@@ -133,7 +139,7 @@ void Arrow::setDirectLineColor(sf::Color color) {
 }
 
 sf::Vector2f Arrow::getDestination() const {
-  return sf::Vector2f((directLine[2].position.x + directLine[3].position.x) / 2, (directLine[2].position.y + directLine[3].position.y) / 2);
+  return destination;
 }
 
 size_t Arrow::getOriginNode() const {

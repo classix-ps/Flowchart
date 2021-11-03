@@ -2,7 +2,7 @@
 
 #define _USE_MATH_DEFINES
 
-#include <SFML/Graphics.hpp>
+#include "node.hpp"
 #include <array>
 
 
@@ -33,6 +33,7 @@ private:
   sf::CircleShape head;
 
   sf::Vector2f origin;
+  sf::Vector2f destination;
 
   size_t originNode = 0;
   size_t destinationNode = 0;

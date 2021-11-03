@@ -1,23 +1,20 @@
 #include "grid.hpp"
 
-Grid::Grid() {
-
+Grid::Grid() : lineTemplate{ sf::Lines, 2 } {
+  nodeCellWidth = int(Node::fieldTmplt.getSize().x / gridSpaces);
+  nodeCellHeight = int(Node::fieldTmplt.getSize().y / gridSpaces);
 }
 
-Grid::Grid(const sf::Vector2u& size) {
-  sf::VertexArray line(sf::Lines, 2);
-  line[0].color = sf::Color(150, 150, 150);
-  line[1].color = line[0].color;
-  for (size_t i = 0; i <= size.x; i += 4) {
-    line[0].position = sf::Vector2f(float(i), 0.f);
-    line[1].position = sf::Vector2f(float(i), float(size.y));
-    lines.push_back(line);
-  }
-  for (size_t i = 0; i <= size.y; i += 4) {
-    line[0].position = sf::Vector2f(0.f, float(i));
-    line[1].position = sf::Vector2f(float(size.x), float(i));
-    lines.push_back(line);
-  }
+Grid::Grid(const sf::Vector2u& size) : lineTemplate{ sf::Lines, 2 } {
+  lineTemplate[0].color = sf::Color(150, 150, 150);
+  lineTemplate[1].color = lineTemplate[0].color;
+
+  nodeCellWidth = int(Node::fieldTmplt.getSize().x / gridSpaces);
+  nodeCellHeight = int(Node::fieldTmplt.getSize().y / gridSpaces);
+}
+
+sf::Vector2i Grid::posToCell(const sf::Vector2f& pos) const {
+  return sf::Vector2i(int(pos.x / gridSpaces), int(pos.y / gridSpaces));
 }
 
 bool Grid::validCell(const sf::Vector2i& cell) const {
@@ -30,7 +27,7 @@ bool Grid::validCell(const sf::Vector2i& cell) const {
     }
     if (!selectedNode) {
       sf::Vector2i delta = cell - posToCell(nodes[i].getCenter());
-      if (abs(delta.x) < 10 && abs(delta.y) < 6) {
+      if (abs(delta.x) < nodeCellWidth + 2 && abs(delta.y) < nodeCellHeight + 2) {
         return false;
       }
     }
@@ -40,7 +37,20 @@ bool Grid::validCell(const sf::Vector2i& cell) const {
 }
 
 void Grid::draw(sf::RenderWindow& window) const {
-  for (const sf::VertexArray& line : lines) {
+  sf::VertexArray line(lineTemplate);
+  const sf::View currentView = window.getView();
+  float left = currentView.getCenter().x - currentView.getSize().x / 2;
+  float right = currentView.getCenter().x + currentView.getSize().x / 2;
+  float top = currentView.getCenter().y - currentView.getSize().y / 2;
+  float bottom = currentView.getCenter().y + currentView.getSize().y / 2;
+  for (int i = gridSpaces * int(left / gridSpaces); i < gridSpaces * int(right / gridSpaces); i += gridSpaces) {
+    line[0].position = sf::Vector2f(float(i), top);
+    line[1].position = sf::Vector2f(float(i), bottom);
+    window.draw(line);
+  }
+  for (int i = gridSpaces * int(top / gridSpaces); i < gridSpaces * int(bottom / gridSpaces); i += gridSpaces) {
+    line[0].position = sf::Vector2f(left, float(i));
+    line[1].position = sf::Vector2f(right, float(i));
     window.draw(line);
   }
 
@@ -89,13 +99,6 @@ void Grid::addArrow() {
       break;
     }
   }
-}
-
-void Grid::zoom(float z) {
-  for (Node& node : nodes) {
-    node.setScale(z);
-  }
-  nodeOutline.setScale(z);
 }
 
 bool Grid::startArrow(const sf::Vector2f& pos) {
@@ -174,7 +177,7 @@ void Grid::move(const sf::Vector2f& pos) {
 
   for (const std::pair<size_t, sf::Vector2f>& select : selections) {
     sf::Vector2f newPos = pos - select.second;
-    nodes[select.first].setPosition(sf::Vector2f(4 * int(newPos.x / 4) + 2.f, 4 * int(newPos.y / 4) + 2.f));
+    nodes[select.first].setPosition(sf::Vector2f(gridSpaces * int(newPos.x / gridSpaces) + float(gridSpaces) / 2, gridSpaces * int(newPos.y / gridSpaces) + float(gridSpaces) / 2));
   }
 
   for (Arrow& arrow : arrows) {
@@ -308,7 +311,7 @@ void Grid::setTextCursor(const sf::Vector2f& pos) {
 
 void Grid::setNodeOutlinePosition(const sf::Vector2f& pos) {
   if (validCell(posToCell(pos))) {
-    nodeOutline.setPosition(sf::Vector2f(4 * int(pos.x / 4) + 2.f, 4 * int(pos.y / 4) + 2.f));
+    nodeOutline.setPosition(sf::Vector2f(gridSpaces * int(pos.x / gridSpaces) + float(gridSpaces) / 2, gridSpaces * int(pos.y / gridSpaces) + float(gridSpaces) / 2));
     showNodeOutline = true;
   }
   else {
@@ -317,13 +320,6 @@ void Grid::setNodeOutlinePosition(const sf::Vector2f& pos) {
 }
 
 void Grid::setArrowOutlinePosition(const sf::Vector2f& pos) {
-  for (const Node& node : nodes) {
-    if (node.contains(pos)) {
-      arrowOutline.setDestination(pos);
-      return;
-    }
-  }
-
   arrowOutline.setDestination(pos);
 }
 

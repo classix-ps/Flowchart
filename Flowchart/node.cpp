@@ -2,11 +2,11 @@
 
 sf::RoundedRectangleShape Node::fieldTmplt;
 
-Node::Node() : textbox{200.f} {
+Node::Node() : textbox{ 250.f } {
   field = sf::RoundedRectangleShape(fieldTmplt);
 }
 
-Node::Node(const sf::Vector2f& pos) : textbox{30.f} {
+Node::Node(const sf::Vector2f& pos) : textbox{ 250.f } {
   field = sf::RoundedRectangleShape(fieldTmplt);
 
   field.setPosition(pos);
@@ -58,24 +58,8 @@ void Node::setState(NodeState nodeState) {
   }
 }
 
-void Node::setScale(float zoom) {
-  //textbox.setScale(sf::Vector2f(zoom, zoom));
-}
-
 sf::Vector2f Node::getCenter() const {
   return field.getPosition();
-}
-
-std::vector<sf::Vector2i> Node::getCells() const {
-  std::vector<sf::Vector2i> cells;
-  sf::Vector2i center = posToCell(this->getCenter());
-  for (int xIter = -5; xIter <= 5; xIter++) {
-    for (int yIter = -3; yIter <= 3; yIter++) {
-      cells.push_back(sf::Vector2i(center.x + xIter, center.y + yIter));
-    }
-  }
-
-  return cells;
 }
 
 sf::FloatRect Node::getBounds() const {
