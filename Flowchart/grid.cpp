@@ -87,10 +87,6 @@ void Grid::addArrow() {
   }
 }
 
-void Grid::updateArrows() {
-
-}
-
 bool Grid::onNode(const sf::Vector2f& pos) {
   for (const Node& node : nodes) {
     if (node.contains(pos)) {
@@ -173,6 +169,25 @@ void Grid::move(const sf::Vector2f& pos) {
     sf::Vector2f newPos = pos - select.second;
     nodes[select.first].setPosition(sf::Vector2f(4 * int(newPos.x / 4) + 2.f, 4 * int(newPos.y / 4) + 2.f));
   }
+
+  for (Arrow& arrow : arrows) {
+    std::map<size_t, sf::Vector2f>::iterator originIt = selections.find(arrow.getOriginNode());
+    std::map<size_t, sf::Vector2f>::iterator destinationIt = selections.find(arrow.getDestinationNode());
+    if (originIt != selections.end() && destinationIt != selections.end()) {
+      arrow.setOrigin(nodes[originIt->first].getCenter());
+      arrow.setDestination(nodes[destinationIt->first].getCenter());
+      arrow.setHead(nodes[destinationIt->first].getBounds());
+    }
+    else if (originIt != selections.end()) {
+      arrow.setOrigin(nodes[originIt->first].getCenter());
+      arrow.setDestination(nodes[arrow.getDestinationNode()].getCenter());
+      arrow.setHead(nodes[arrow.getDestinationNode()].getBounds());
+    }
+    else if (destinationIt != selections.end()) {
+      arrow.setDestination(nodes[destinationIt->first].getCenter());
+      arrow.setHead(nodes[destinationIt->first].getBounds());
+    }
+  }
 }
 
 bool Grid::highlightSingle(const sf::Vector2f& pos) {
@@ -251,7 +266,23 @@ void Grid::setSelectionsMovement() {
 }
 
 void Grid::deleteSelected() {
+  size_t offset = 0;
+  for (const std::pair<size_t, sf::Vector2f>& selection : selections) {
+    nodes.erase(nodes.begin() + selection.first - offset);
+    for (int i = arrows.size() - 1; i > -1; i--) {
+      if (arrows[i].getOriginNode() == selection.first || arrows[i].getDestinationNode() == selection.first) {
+        arrows.erase(arrows.begin() + i);
+      }
+      else {
+        arrows[i].setOriginNode(arrows[i].getOriginNode() - (arrows[i].getOriginNode() > selection.first));
+        arrows[i].setDestinationNode(arrows[i].getDestinationNode() - (arrows[i].getDestinationNode() > selection.first));
+      }
+    }
 
+    offset++;
+  }
+
+  selections.clear();
 }
 
 void Grid::setNodeOutlinePosition(const sf::Vector2f& pos) {

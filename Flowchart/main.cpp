@@ -5,7 +5,7 @@
 
 int main() {
   // Node template
-  Node::fieldTmplt.setSize(sf::Vector2f(37.f, 21.f));
+  Node::fieldTmplt.setSize(sf::Vector2f(36.f, 20.f));
   Node::fieldTmplt.setCornersRadius(2.f);
   Node::fieldTmplt.setCornerPointCount(10);
   Node::fieldTmplt.setOutlineThickness(1.f);
@@ -14,8 +14,8 @@ int main() {
   Node::fieldTmplt.setOutlineColor(sf::Color(0, 0, 0, 150));
 
   // Arrow angles
-  float a1 = atan2((Node::fieldTmplt.getSize().y / 2) - Node::fieldTmplt.getCornersRadius(), Node::fieldTmplt.getSize().x / 2) * 180.f / float(M_PI);
-  float a2 = atan2(Node::fieldTmplt.getSize().y / 2, (Node::fieldTmplt.getSize().x / 2) - Node::fieldTmplt.getCornersRadius()) * 180.f / float(M_PI);
+  float a1 = atan2((Node::fieldTmplt.getSize().y / 2) - Node::fieldTmplt.getCornersRadius(), Node::fieldTmplt.getSize().x / 2 + Node::fieldTmplt.getOutlineThickness()) * 180.f / float(M_PI);
+  float a2 = atan2(Node::fieldTmplt.getSize().y / 2 + Node::fieldTmplt.getOutlineThickness(), (Node::fieldTmplt.getSize().x / 2) - Node::fieldTmplt.getCornersRadius()) * 180.f / float(M_PI);
   Arrow::angleTemplate[0] = a1;
   Arrow::angleTemplate[1] = a2;
   Arrow::angleTemplate[2] = 180.f - a2;
@@ -24,11 +24,6 @@ int main() {
   Arrow::angleTemplate[5] = 180.f + a2;
   Arrow::angleTemplate[6] = 360.f - a2;
   Arrow::angleTemplate[7] = 360.f - a1;
-  float a3 = atan2(Node::fieldTmplt.getSize().y / 2, Node::fieldTmplt.getSize().x / 2) / float(M_PI);
-  Arrow::angleTemplate[8] = a3;
-  Arrow::angleTemplate[9] = 180.f - a3;
-  Arrow::angleTemplate[10] = 180.f + a3;
-  Arrow::angleTemplate[11] = 360.f - a3;
 
   // Text template
   //gui::Theme::loadFont("../Resources/fonts/arial.ttf");

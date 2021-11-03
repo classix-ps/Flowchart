@@ -1,13 +1,13 @@
 #include "arrow.hpp"
 
-std::array<float, 12> Arrow::angleTemplate;
+std::array<float, 8> Arrow::angleTemplate;
 
 Arrow::Arrow() : head{ 4.f, 3 }, directLine{ sf::Quads, 4 } {
   for (size_t i = 0; i < 4; i++) {
     directLine[i].color = sf::Color(0, 102, 51, 255);
   }
   head.setFillColor(sf::Color(0, 102, 51, 255));
-  head.setOrigin(4.f, 0.5f);
+  head.setOrigin(4.f, 0.f);
   head.setScale(sf::Vector2f(0.8f, 1.f));
 }
 
@@ -54,29 +54,14 @@ void Arrow::setHead(const sf::FloatRect& boundingRect) {
   float theta = atan2(delta.y, delta.x);
   float thetaDeg = theta * 180.f / float(M_PI);
   float thetaDegPositive = thetaDeg + 180.f;
+
   // Bottom left -> Counter-clockwise
-  if (thetaDegPositive >= angleTemplate[0] && thetaDegPositive < angleTemplate[1]) {
-    if (thetaDegPositive < angleTemplate[8]) {
-
-    }
-    else {
-
-    }
-  }
-  else if (thetaDegPositive >= angleTemplate[1] && thetaDegPositive < angleTemplate[2]) {
+  if (thetaDegPositive >= angleTemplate[1] && thetaDegPositive < angleTemplate[2]) {
     if (thetaDegPositive == 90.f) {
       head.setPosition(sf::Vector2f(center.x, boundingRect.top + boundingRect.height));
     }
     else {
       head.setPosition(sf::Vector2f(center.x - boundingRect.height / (2 * tan(theta)), boundingRect.top + boundingRect.height));
-    }
-  }
-  else if (thetaDegPositive >= angleTemplate[2] && thetaDegPositive < angleTemplate[3]) {
-    if (thetaDegPositive < angleTemplate[9]) {
-
-    }
-    else {
-
     }
   }
   else if (thetaDegPositive >= angleTemplate[3] && thetaDegPositive < angleTemplate[4]) {
@@ -87,14 +72,6 @@ void Arrow::setHead(const sf::FloatRect& boundingRect) {
       head.setPosition(sf::Vector2f(boundingRect.left + boundingRect.width, center.y - boundingRect.width / (2 * tan(((float(M_PI) / 2) - theta)))));
     }
   }
-  else if (thetaDegPositive >= angleTemplate[4] && thetaDegPositive < angleTemplate[5]) {
-    if (thetaDegPositive < angleTemplate[10]) {
-
-    }
-    else {
-
-    }
-  }
   else if (thetaDegPositive >= angleTemplate[5] && thetaDegPositive < angleTemplate[6]) {
     if (thetaDegPositive == 270.f) {
       head.setPosition(sf::Vector2f(center.x, boundingRect.top));
@@ -103,20 +80,35 @@ void Arrow::setHead(const sf::FloatRect& boundingRect) {
       head.setPosition(sf::Vector2f(center.x + boundingRect.height / (2 * tan(theta)), boundingRect.top));
     }
   }
-  else if (thetaDegPositive >= angleTemplate[6] && thetaDegPositive < angleTemplate[7]) {
-    if (thetaDegPositive < angleTemplate[11]) {
-
-    }
-    else {
-
-    }
-  }
   else if (thetaDegPositive >= angleTemplate[7] || thetaDegPositive < angleTemplate[0]) {
     if (thetaDegPositive == 0.f) {
       head.setPosition(sf::Vector2f(boundingRect.left, center.y));
     }
     else {
       head.setPosition(sf::Vector2f(boundingRect.left, center.y + boundingRect.width / (2 * tan((float(M_PI) / 2) - theta))));
+    }
+  }
+  else {
+    // Mathematica: Reduce[{a + p == (b + q)*m, p^2 + q^2 == c}, {p, q}]
+    float r = 3.f; // radius of rounded corners
+    float m = abs(delta.y / delta.x);
+    float a = (boundingRect.height / 2 - r);
+    float b = (boundingRect.width / 2 - r);
+    float c = r * r;
+    float p = (-a + b * m + sqrt((c - a * a) * m * m + 2 * a * b * m * m * m + (c - b * b) * m * m * m * m)) / (1 + m * m);
+    float q = (a - b * m + p) / m;
+
+    if (thetaDegPositive >= angleTemplate[0] && thetaDegPositive < angleTemplate[1]) {
+      head.setPosition(sf::Vector2f(boundingRect.left + (r - q), boundingRect.top + boundingRect.height - (r - p)));
+    }
+    else if (thetaDegPositive >= angleTemplate[2] && thetaDegPositive < angleTemplate[3]) {
+      head.setPosition(sf::Vector2f(boundingRect.left + boundingRect.width - (r - q), boundingRect.top + boundingRect.height - (r - p)));
+    }
+    else if (thetaDegPositive >= angleTemplate[4] && thetaDegPositive < angleTemplate[5]) {
+      head.setPosition(sf::Vector2f(boundingRect.left + boundingRect.width - (r - q), boundingRect.top + (r - p)));
+    }
+    else if (thetaDegPositive >= angleTemplate[6] && thetaDegPositive < angleTemplate[7]) {
+      head.setPosition(sf::Vector2f(boundingRect.left + (r - q), boundingRect.top + (r - p)));
     }
   }
   
@@ -140,10 +132,14 @@ void Arrow::setDirectLineColor(sf::Color color) {
   head.setFillColor(color);
 }
 
-sf::Vector2f Arrow::getDestination() {
+sf::Vector2f Arrow::getDestination() const {
   return sf::Vector2f((directLine[2].position.x + directLine[3].position.x) / 2, (directLine[2].position.y + directLine[3].position.y) / 2);
 }
 
-size_t Arrow::getOriginNode() {
+size_t Arrow::getOriginNode() const {
   return originNode;
+}
+
+size_t Arrow::getDestinationNode() const {
+  return destinationNode;
 }

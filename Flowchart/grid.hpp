@@ -13,8 +13,6 @@ public:
   void addNode();
   void addArrow();
 
-  void updateArrows();
-
   bool onNode(const sf::Vector2f& pos);
   bool startArrow(const sf::Vector2f& pos);
   void select(const sf::Vector2f& pos);

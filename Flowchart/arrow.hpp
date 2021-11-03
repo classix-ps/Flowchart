@@ -21,10 +21,11 @@ public:
 
   void setDirectLineColor(sf::Color color);
 
-  sf::Vector2f getDestination();
-  size_t getOriginNode();
+  sf::Vector2f getDestination() const;
+  size_t getOriginNode() const;
+  size_t getDestinationNode() const;
 
-  static std::array<float, 12> angleTemplate;
+  static std::array<float, 8> angleTemplate;
 
 private:
   std::vector<sf::VertexArray> segments;
