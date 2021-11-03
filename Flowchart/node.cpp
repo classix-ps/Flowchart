@@ -2,43 +2,33 @@
 
 sf::RoundedRectangleShape Node::fieldTmplt;
 
-Node::Node() /*: textbox{30.f}*/ {
+Node::Node() : textbox{200.f} {
   field = sf::RoundedRectangleShape(fieldTmplt);
-  /*
-  sf::Text text("", gui::Theme::getFont());
-  text.setOrigin(text.getLocalBounds().width / 2, text.getLocalBounds().height / 2);
-  textbox.setCallback([&]() {
-    text.setString(textbox.getText());
-    text.setOrigin(text.getLocalBounds().width / 2, text.getLocalBounds().height / 2);
-  });*/
 }
 
-Node::Node(const sf::Vector2f& pos) /*: textbox{30.f}*/ {
+Node::Node(const sf::Vector2f& pos) : textbox{30.f} {
   field = sf::RoundedRectangleShape(fieldTmplt);
-  /*
-  sf::Text text("", gui::Theme::getFont());
-  text.setOrigin(text.getLocalBounds().width / 2, text.getLocalBounds().height / 2);
-  textbox.setCallback([&]() {
-    text.setString(textbox.getText());
-    text.setOrigin(text.getLocalBounds().width / 2, text.getLocalBounds().height / 2);
-  });*/
 
   field.setPosition(pos);
-  //textbox.setPosition(pos - sf::Vector2f(textbox.getSize().x / 2, textbox.getSize().y / 2));
+  textbox.setPosition(pos - textbox.getSize() / 2.f);
 }
 
 void Node::draw(sf::RenderWindow& window) const {
   window.draw(field);
-  //window.draw(textbox);
+  window.draw(textbox);
 }
 
 bool Node::contains(const sf::Vector2f& pos) const {
   return field.getGlobalBounds().contains(pos);
 }
 
+bool Node::onTextbox(const sf::Vector2f& pos) const {
+  return textbox.containsPoint(pos - textbox.getPosition());
+}
+
 void Node::setPosition(const sf::Vector2f& pos) {
   field.setPosition(pos);
-  //textbox.setPosition(pos - sf::Vector2f(15.f, 8.f));
+  textbox.setPosition(pos - textbox.getSize() / 2.f);
 }
 
 void Node::setState(NodeState nodeState) {
@@ -68,6 +58,10 @@ void Node::setState(NodeState nodeState) {
   }
 }
 
+void Node::setScale(float zoom) {
+  //textbox.setScale(sf::Vector2f(zoom, zoom));
+}
+
 sf::Vector2f Node::getCenter() const {
   return field.getPosition();
 }
@@ -90,6 +84,19 @@ sf::FloatRect Node::getBounds() const {
 
 NodeState Node::getState() const {
   return state;
+}
+
+void Node::addText(sf::Uint32 unicode) {
+  textbox.onTextEntered(unicode);
+}
+
+void Node::setTextboxState(gui::State textboxState) {
+  textbox.onStateChanged(textboxState);
+}
+
+void Node::setTextCursor(const sf::Vector2f& pos) {
+  sf::Vector2f textPos = pos - textbox.getPosition();
+  textbox.onMousePressed(textPos.x, textPos.y);
 }
 
 void Node::point(size_t i) {

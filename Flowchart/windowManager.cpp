@@ -37,6 +37,7 @@ WindowManager::WindowManager(unsigned int width, unsigned int height) : window(s
   // View
   view = window.getDefaultView();
   view.zoom(zoom);
+  grid.zoom(zoom);
 }
 
 void WindowManager::hover(const sf::Vector2f& pos) {
@@ -71,6 +72,7 @@ void WindowManager::run() {
         
         view.setSize(window.getDefaultView().getSize());
         view.zoom(zoom);
+        grid.zoom(zoom);
         window.setView(view);
         globalPos = window.mapPixelToCoords(mousePosPx);
       }
@@ -83,14 +85,18 @@ void WindowManager::run() {
 
         // Move view or node
         if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-          if (grid.grab(globalPos)) {
+          int onNode = grid.grab(globalPos);
+          if (onNode == 0) {
+            oldPos = mousePos;
+            window.setMouseCursor(cursorGrab);
+            state = State::Move;
+          }
+          else if (onNode == 1) {
             window.setMouseCursor(cursorGrab);
             state = State::MoveNode;
           }
           else {
-            oldPos = mousePos;
-            window.setMouseCursor(cursorGrab);
-            state = State::Move;
+            state = State::Text;
           }
         }
         // Enter add state
@@ -243,8 +249,37 @@ void WindowManager::run() {
         else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S) {
           // Save
         }
+        // Undo
+        else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z) {
+
+        }
         else {
           hover(globalPos);
+        }
+
+        break;
+      };
+      case State::Text:
+      {
+        if (event.type == sf::Event::TextEntered) {
+          grid.addText(event.text.unicode);
+        }
+        else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+          grid.confirmText();
+          hover(globalPos);
+          state = State::View;
+        }
+        else if (event.type == sf::Event::MouseButtonPressed) {
+          if (grid.onEdit(globalPos)) {
+            if (event.mouseButton.button == sf::Mouse::Left) {
+              grid.setTextCursor(globalPos);
+            }
+          }
+          else {
+            grid.confirmText();
+            hover(globalPos);
+            state = State::View;
+          }
         }
 
         break;

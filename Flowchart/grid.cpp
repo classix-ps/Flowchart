@@ -63,9 +63,8 @@ void Grid::draw(sf::RenderWindow& window) const {
 
 void Grid::addNode() {
   if (validCell(posToCell(nodeOutline.getCenter()))) {
-    nodeOutline.setState(NodeState::Locked);
     nodes.push_back(nodeOutline);
-    nodeOutline.setState(NodeState::Placing);
+    nodes.back().setState(NodeState::Locked);
   }
 }
 
@@ -73,6 +72,11 @@ void Grid::addArrow() {
   sf::Vector2f destination = arrowOutline.getDestination();
   for (size_t i = 0; i < nodes.size(); i++) {
     if (nodes[i].contains(destination) && arrowOutline.getOriginNode() != i && !nodes[arrowOutline.getOriginNode()].pointsTo(i)) {
+      // Disallows double-ended arrows
+      if (nodes[i].pointsTo(arrowOutline.getOriginNode())) {
+        break;
+      }
+
       arrowOutline.setDestinationNode(i);
       nodes[arrowOutline.getOriginNode()].point(i);
 
@@ -87,14 +91,11 @@ void Grid::addArrow() {
   }
 }
 
-bool Grid::onNode(const sf::Vector2f& pos) {
-  for (const Node& node : nodes) {
-    if (node.contains(pos)) {
-      return true;
-    }
+void Grid::zoom(float z) {
+  for (Node& node : nodes) {
+    node.setScale(z);
   }
-
-  return false;
+  nodeOutline.setScale(z);
 }
 
 bool Grid::startArrow(const sf::Vector2f& pos) {
@@ -121,12 +122,18 @@ void Grid::select(const sf::Vector2f& pos) {
   }
 }
 
-bool Grid::grab(const sf::Vector2f& pos) {
+int Grid::grab(const sf::Vector2f& pos) {
   bool onNode = false;
   bool preSelected = false;
   size_t i = 0;
   for (i; i < nodes.size(); i++) {
     if (nodes[i].contains(pos)) {
+      if (nodes[i].onTextbox(pos)) {
+        editing = i;
+        nodes[i].setTextboxState(gui::State::StateFocused);
+        return 2;
+      }
+
       onNode = true;
       preSelected = nodes[i].getState() == NodeState::Selected;
       break;
@@ -266,23 +273,37 @@ void Grid::setSelectionsMovement() {
 }
 
 void Grid::deleteSelected() {
-  size_t offset = 0;
-  for (const std::pair<size_t, sf::Vector2f>& selection : selections) {
-    nodes.erase(nodes.begin() + selection.first - offset);
+  for (std::map<size_t, sf::Vector2f>::reverse_iterator iter = selections.rbegin(); iter != selections.rend(); iter++) {
+    nodes.erase(nodes.begin() + iter->first);
     for (int i = arrows.size() - 1; i > -1; i--) {
-      if (arrows[i].getOriginNode() == selection.first || arrows[i].getDestinationNode() == selection.first) {
+      if (arrows[i].getOriginNode() == iter->first || arrows[i].getDestinationNode() == iter->first) {
         arrows.erase(arrows.begin() + i);
       }
       else {
-        arrows[i].setOriginNode(arrows[i].getOriginNode() - (arrows[i].getOriginNode() > selection.first));
-        arrows[i].setDestinationNode(arrows[i].getDestinationNode() - (arrows[i].getDestinationNode() > selection.first));
+        arrows[i].setOriginNode(arrows[i].getOriginNode() - (arrows[i].getOriginNode() > iter->first));
+        arrows[i].setDestinationNode(arrows[i].getDestinationNode() - (arrows[i].getDestinationNode() > iter->first));
       }
     }
 
-    offset++;
   }
 
   selections.clear();
+}
+
+void Grid::addText(sf::Uint32 unicode) {
+  nodes[editing].addText(unicode);
+}
+
+void Grid::confirmText() {
+  nodes[editing].setTextboxState(gui::State::StateDefault);
+}
+
+bool Grid::onEdit(const sf::Vector2f& pos) const {
+  return nodes[editing].onTextbox(pos);
+}
+
+void Grid::setTextCursor(const sf::Vector2f& pos) {
+  nodes[editing].setTextCursor(pos);
 }
 
 void Grid::setNodeOutlinePosition(const sf::Vector2f& pos) {

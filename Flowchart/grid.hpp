@@ -13,10 +13,11 @@ public:
   void addNode();
   void addArrow();
 
-  bool onNode(const sf::Vector2f& pos);
+  void zoom(float z);
+
   bool startArrow(const sf::Vector2f& pos);
   void select(const sf::Vector2f& pos);
-  bool grab(const sf::Vector2f& pos);
+  int grab(const sf::Vector2f& pos);
   void deselect(bool force=false);
   void move(const sf::Vector2f& delta);
   bool highlightSingle(const sf::Vector2f& pos);
@@ -26,6 +27,11 @@ public:
   void selectHighlighted(const sf::Vector2f& pos);
   void setSelectionsMovement();
   void deleteSelected();
+
+  void addText(sf::Uint32 unicode);
+  void confirmText();
+  bool onEdit(const sf::Vector2f& pos) const;
+  void setTextCursor(const sf::Vector2f& pos);
 
   void setNodeOutlinePosition(const sf::Vector2f& pos);
   bool showNodeOutline = false;
@@ -45,6 +51,7 @@ private:
 
   std::map<size_t, sf::Vector2f> selections;
   std::vector<size_t> highlights;
+  size_t editing = 0;
 
   bool validCell(const sf::Vector2i& cell) const;
 };

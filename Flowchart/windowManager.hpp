@@ -2,7 +2,7 @@
 
 #include "grid.hpp"
 
-enum class State { View, Add, Connect, Move, MoveNode, Select, SelectNode };
+enum class State { View, Add, Connect, Move, MoveNode, Select, SelectNode, Text };
 
 class WindowManager {
 public:
