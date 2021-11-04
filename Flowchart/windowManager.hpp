@@ -32,7 +32,7 @@ private:
 
   bool selecting = false;
 
-  float zoom = 1.f;
+  float zoom = 1.5f;
 
   void hover(const sf::Vector2f& pos);
 };

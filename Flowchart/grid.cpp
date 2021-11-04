@@ -43,12 +43,12 @@ void Grid::draw(sf::RenderWindow& window) const {
   float right = currentView.getCenter().x + currentView.getSize().x / 2;
   float top = currentView.getCenter().y - currentView.getSize().y / 2;
   float bottom = currentView.getCenter().y + currentView.getSize().y / 2;
-  for (int i = gridSpaces * int(left / gridSpaces); i < gridSpaces * int(right / gridSpaces); i += gridSpaces) {
+  for (int i = gridSpaces * int(left / gridSpaces); i <= gridSpaces * int(right / gridSpaces); i += gridSpaces) {
     line[0].position = sf::Vector2f(float(i), top);
     line[1].position = sf::Vector2f(float(i), bottom);
     window.draw(line);
   }
-  for (int i = gridSpaces * int(top / gridSpaces); i < gridSpaces * int(bottom / gridSpaces); i += gridSpaces) {
+  for (int i = gridSpaces * int(top / gridSpaces); i <= gridSpaces * int(bottom / gridSpaces); i += gridSpaces) {
     line[0].position = sf::Vector2f(left, float(i));
     line[1].position = sf::Vector2f(right, float(i));
     window.draw(line);

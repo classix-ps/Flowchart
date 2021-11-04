@@ -37,6 +37,7 @@ WindowManager::WindowManager(unsigned int width, unsigned int height) : window(s
   // View
   view = window.getDefaultView();
   view.zoom(zoom);
+  window.setView(view);
 }
 
 void WindowManager::hover(const sf::Vector2f& pos) {
