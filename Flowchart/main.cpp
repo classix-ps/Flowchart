@@ -3,6 +3,8 @@
 #include "windowManager.hpp"
 #ifdef NODEMO
 int main() {
+  std::string path = "../../Resources/";
+
   // Node template
   Node::fieldTmplt.setSize(sf::Vector2f(360.f, 200.f));
   Node::fieldTmplt.setCornersRadius(20.f);
@@ -25,10 +27,11 @@ int main() {
   Arrow::angleTemplate[7] = 360.f - a1;
 
   // Theme template
-  gui::Theme::loadFont("../Resources/fonts/tahoma.ttf");
+  gui::Theme::loadFont(path + "fonts/tahoma.ttf");
   gui::Theme::textSize = 50;
-  gui::Theme::loadTexture("../Resources/theme/texture-default.png");
+  gui::Theme::loadTexture(path + "theme/texture-default.png");
   gui::Theme::PADDING = 2.f;
+  gui::Theme::borderSize = 2.f;
 
   WindowManager window(1920, 1080);
 

@@ -5,26 +5,28 @@ WindowManager::WindowManager() : state{ State::View } {
 }
 
 WindowManager::WindowManager(unsigned int width, unsigned int height) : window(sf::VideoMode(width, height), "Flowchart Creator"), grid(sf::Vector2u(width, height)), state{ State::View } {
+  std::string path = "../../Resources/";
+  
   // Icon
   sf::Image icon;
-  icon.loadFromFile("../Resources/icon.png");
+  icon.loadFromFile(path + "icon.png");
   window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
   // Cursors
   sf::Image cursorDefaultImg;
-  cursorDefaultImg.loadFromFile("../Resources/cursors/default.png");
+  cursorDefaultImg.loadFromFile(path + "cursors/default.png");
   cursorDefault.loadFromPixels(cursorDefaultImg.getPixelsPtr(), cursorDefaultImg.getSize(), sf::Vector2u(8, 9));
 
   sf::Image cursorPointerImg;
-  cursorPointerImg.loadFromFile("../Resources/cursors/pointer.png");
+  cursorPointerImg.loadFromFile(path + "cursors/pointer.png");
   cursorPointer.loadFromPixels(cursorPointerImg.getPixelsPtr(), cursorPointerImg.getSize(), sf::Vector2u(33, 8));
 
   sf::Image cursorGrabImg;
-  cursorGrabImg.loadFromFile("../Resources/cursors/dnd-move.png");
+  cursorGrabImg.loadFromFile(path + "cursors/dnd-move.png");
   cursorGrab.loadFromPixels(cursorGrabImg.getPixelsPtr(), cursorGrabImg.getSize(), sf::Vector2u(32, 32));
 
   sf::Image cursorCrosshairImg;
-  cursorCrosshairImg.loadFromFile("../Resources/cursors/crosshair.png");
+  cursorCrosshairImg.loadFromFile(path + "cursors/crosshair.png");
   cursorCrosshair.loadFromPixels(cursorCrosshairImg.getPixelsPtr(), cursorCrosshairImg.getSize(), sf::Vector2u(32, 32));
 
   window.setMouseCursor(cursorDefault);
