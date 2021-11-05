@@ -8,7 +8,7 @@ public:
   Grid();
   Grid(const sf::Vector2u& size);
 
-  void draw(sf::RenderWindow& window) const;
+  void draw(sf::RenderWindow& window, int drawOutlines=0) const;
 
   void addNode();
   void addArrow();
@@ -17,7 +17,8 @@ public:
   void select(const sf::Vector2f& pos);
   int grab(const sf::Vector2f& pos);
   void deselect(bool force=false);
-  void move(const sf::Vector2f& delta);
+  bool move(const sf::Vector2f& delta);
+  void confirmMove();
   bool highlightSingle(const sf::Vector2f& pos);
   void highlightArrow(const sf::Vector2f& pos);
   void highlightSelect(const sf::FloatRect& box);
@@ -31,11 +32,9 @@ public:
   bool onEdit(const sf::Vector2f& pos) const;
   void setTextCursor(const sf::Vector2f& pos);
 
-  void setNodeOutlinePosition(const sf::Vector2f& pos);
-  bool showNodeOutline = false;
+  bool setNodeOutlinePosition(const sf::Vector2f& pos);
 
   void setArrowOutlinePosition(const sf::Vector2f& pos);
-  bool showArrowOutline = false;
 
   void saveToJson() const;
 
@@ -52,10 +51,11 @@ private:
   Node nodeOutline;
   Arrow arrowOutline;
 
-  std::map<size_t, sf::Vector2f> selections;
+  std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>> selections;
   std::vector<size_t> highlights;
   size_t editing = 0;
 
+  sf::Vector2f cellToPos(const sf::Vector2i& cell) const;
   sf::Vector2i posToCell(const sf::Vector2f& pos) const;
   bool validCell(const sf::Vector2i& cell) const;
 };

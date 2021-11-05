@@ -17,10 +17,14 @@ sf::Vector2i Grid::posToCell(const sf::Vector2f& pos) const {
   return sf::Vector2i(int(pos.x / gridSpaces), int(pos.y / gridSpaces));
 }
 
+sf::Vector2f Grid::cellToPos(const sf::Vector2i& pos) const {
+  return sf::Vector2f(gridSpaces * pos.x + float(gridSpaces) / 2, gridSpaces * pos.y + float(gridSpaces) / 2);
+}
+
 bool Grid::validCell(const sf::Vector2i& cell) const {
   for (size_t i = 0; i < nodes.size(); i++) {
     bool selectedNode = false;
-    for (const std::pair<size_t, sf::Vector2f>& selection : selections) {
+    for (const std::pair<size_t, std::pair<sf::Vector2f, sf::Vector2f>>& selection : selections) {
       if (selection.first == i) {
         selectedNode = true;
       }
@@ -36,7 +40,7 @@ bool Grid::validCell(const sf::Vector2i& cell) const {
   return true;
 }
 
-void Grid::draw(sf::RenderWindow& window) const {
+void Grid::draw(sf::RenderWindow& window, int outlines) const {
   sf::VertexArray line(lineTemplate);
   const sf::View currentView = window.getView();
   float left = currentView.getCenter().x - currentView.getSize().x / 2;
@@ -63,7 +67,7 @@ void Grid::draw(sf::RenderWindow& window) const {
     arrow.draw(window);
   }
 
-  if (showArrowOutline) {
+  if (outlines == 2) {
     arrowOutline.draw(window);
   }
 
@@ -71,7 +75,7 @@ void Grid::draw(sf::RenderWindow& window) const {
     node.draw(window);
   }
 
-  if (showNodeOutline) {
+  if (outlines == 1) {
     nodeOutline.draw(window);
   }
 }
@@ -124,7 +128,7 @@ void Grid::select(const sf::Vector2f& pos) {
   for (size_t i = 0; i < nodes.size(); i++) {
     if (nodes[i].contains(pos)) {
       nodes[i].setState(NodeState::Selected);
-      selections[i] = sf::Vector2f();
+      selections[i] = std::make_pair(sf::Vector2f(), sf::Vector2f());
       return;
     }
   }
@@ -149,15 +153,15 @@ int Grid::grab(const sf::Vector2f& pos) {
   }
 
   if (preSelected) {
-    for (std::map<size_t, sf::Vector2f>::iterator iter = selections.begin(); iter != selections.end(); iter++) {
-      iter->second = pos - nodes[iter->first].getCenter();
+    for (std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>>::iterator iter = selections.begin(); iter != selections.end(); iter++) {
+      iter->second = std::make_pair(pos - nodes[iter->first].getCenter(), nodes[iter->first].getCenter());
       nodes[iter->first].setState(NodeState::Moving);
     }
   }
   else if (i < nodes.size()) {
     deselect(true);
     nodes[i].setState(NodeState::Moving);
-    selections[i] = pos - nodes[i].getCenter();
+    selections[i] = std::make_pair(pos - nodes[i].getCenter(), nodes[i].getCenter());
   }
 
   return onNode;
@@ -165,29 +169,29 @@ int Grid::grab(const sf::Vector2f& pos) {
 
 void Grid::deselect(bool force) {
   if (selections.size() < 2 || force) {
-    for (const std::pair<size_t, sf::Vector2f>& selection : selections) {
+    for (const std::pair<size_t, std::pair<sf::Vector2f, sf::Vector2f>>& selection : selections) {
       nodes[selection.first].setState(NodeState::Locked);
     }
     selections.clear();
   }
 }
 
-void Grid::move(const sf::Vector2f& pos) {
-  for (const std::pair<size_t, sf::Vector2f>& select : selections) {
-    sf::Vector2f newPos = pos - select.second;
-    if (!validCell(posToCell(newPos))) {
-      return;
+bool Grid::move(const sf::Vector2f& pos) {
+  bool validPositions = true;
+  for (const std::pair<size_t, std::pair<sf::Vector2f, sf::Vector2f>>& select : selections) {
+    if (!validCell(posToCell(pos - select.second.first))) {
+      validPositions = false;
+      break;
     }
   }
 
-  for (const std::pair<size_t, sf::Vector2f>& select : selections) {
-    sf::Vector2f newPos = pos - select.second;
-    nodes[select.first].setPosition(sf::Vector2f(gridSpaces * int(newPos.x / gridSpaces) + float(gridSpaces) / 2, gridSpaces * int(newPos.y / gridSpaces) + float(gridSpaces) / 2));
+  for (const std::pair<size_t, std::pair<sf::Vector2f, sf::Vector2f>>& select : selections) {
+    nodes[select.first].setPosition(cellToPos(posToCell(pos - select.second.first)));
   }
 
   for (Arrow& arrow : arrows) {
-    std::map<size_t, sf::Vector2f>::iterator originIt = selections.find(arrow.getOriginNode());
-    std::map<size_t, sf::Vector2f>::iterator destinationIt = selections.find(arrow.getDestinationNode());
+    std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>>::iterator originIt = selections.find(arrow.getOriginNode());
+    std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>>::iterator destinationIt = selections.find(arrow.getDestinationNode());
     if (originIt != selections.end() && destinationIt != selections.end()) {
       arrow.setOrigin(nodes[originIt->first].getCenter());
       arrow.setDestination(nodes[destinationIt->first].getCenter());
@@ -203,6 +207,43 @@ void Grid::move(const sf::Vector2f& pos) {
       arrow.setHead(nodes[destinationIt->first].getBounds());
     }
   }
+
+  return validPositions;
+}
+
+void Grid::confirmMove() {
+  bool validPositions = true;
+  for (const std::pair<size_t, std::pair<sf::Vector2f, sf::Vector2f>>& select : selections) {
+    if (!validCell(posToCell(nodes[select.first].getCenter()))) {
+      validPositions = false;
+      break;
+    }
+  }
+
+  if (!validPositions) {
+    for (const std::pair<size_t, std::pair<sf::Vector2f, sf::Vector2f>>& select : selections) {
+      nodes[select.first].setPosition(cellToPos(posToCell(select.second.second)));
+    }
+
+    for (Arrow& arrow : arrows) {
+      std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>>::iterator originIt = selections.find(arrow.getOriginNode());
+      std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>>::iterator destinationIt = selections.find(arrow.getDestinationNode());
+      if (originIt != selections.end() && destinationIt != selections.end()) {
+        arrow.setOrigin(nodes[originIt->first].getCenter());
+        arrow.setDestination(nodes[destinationIt->first].getCenter());
+        arrow.setHead(nodes[destinationIt->first].getBounds());
+      }
+      else if (originIt != selections.end()) {
+        arrow.setOrigin(nodes[originIt->first].getCenter());
+        arrow.setDestination(nodes[arrow.getDestinationNode()].getCenter());
+        arrow.setHead(nodes[arrow.getDestinationNode()].getBounds());
+      }
+      else if (destinationIt != selections.end()) {
+        arrow.setDestination(nodes[destinationIt->first].getCenter());
+        arrow.setHead(nodes[destinationIt->first].getBounds());
+      }
+    }
+  }
 }
 
 bool Grid::highlightSingle(const sf::Vector2f& pos) {
@@ -212,7 +253,7 @@ bool Grid::highlightSingle(const sf::Vector2f& pos) {
       overNode = true;
     }
     bool selectedNode = false;
-    for (const std::pair<size_t, sf::Vector2f>& selection : selections) {
+    for (const std::pair<size_t, std::pair<sf::Vector2f, sf::Vector2f>>& selection : selections) {
       if (selection.first == i) {
         selectedNode = true;
       }
@@ -269,19 +310,19 @@ void Grid::selectHighlighted(const sf::Vector2f& pos) {
   selections.clear();
   for (const size_t& highlight : highlights) {
     nodes[highlight].setState(NodeState::Selected);
-    selections[highlight] = sf::Vector2f();
+    selections[highlight] = std::make_pair(sf::Vector2f(), sf::Vector2f());
   }
   highlights.clear();
 }
 
 void Grid::setSelectionsMovement() {
-  for (const std::pair<size_t, sf::Vector2f>& selection : selections) {
+  for (const std::pair<size_t, std::pair<sf::Vector2f, sf::Vector2f>>& selection : selections) {
     nodes[selection.first].setState(NodeState::Selected);
   }
 }
 
 void Grid::deleteSelected() {
-  for (std::map<size_t, sf::Vector2f>::reverse_iterator iter = selections.rbegin(); iter != selections.rend(); iter++) {
+  for (std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>>::reverse_iterator iter = selections.rbegin(); iter != selections.rend(); iter++) {
     nodes.erase(nodes.begin() + iter->first);
     for (int i = arrows.size() - 1; i > -1; i--) {
       if (arrows[i].getOriginNode() == iter->first || arrows[i].getDestinationNode() == iter->first) {
@@ -314,13 +355,16 @@ void Grid::setTextCursor(const sf::Vector2f& pos) {
   nodes[editing].setTextCursor(pos);
 }
 
-void Grid::setNodeOutlinePosition(const sf::Vector2f& pos) {
-  if (validCell(posToCell(pos))) {
-    nodeOutline.setPosition(sf::Vector2f(gridSpaces * int(pos.x / gridSpaces) + float(gridSpaces) / 2, gridSpaces * int(pos.y / gridSpaces) + float(gridSpaces) / 2));
-    showNodeOutline = true;
+bool Grid::setNodeOutlinePosition(const sf::Vector2f& pos) {
+  sf::Vector2i centerCell = posToCell(pos);
+
+  nodeOutline.setPosition(cellToPos(centerCell));
+
+  if (validCell(centerCell)) {
+    return true;
   }
   else {
-    showNodeOutline = false;
+    return false;
   }
 }
 

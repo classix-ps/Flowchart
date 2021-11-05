@@ -2,7 +2,7 @@
 
 #include "grid.hpp"
 
-enum class State { View, Add, Connect, Move, MoveNode, Select, SelectNode, Text };
+enum class State { View, Add, Connect, Move, MoveNode, Select, SelectNode, Text, Zoom };
 
 class WindowManager {
 public:
@@ -14,13 +14,17 @@ public:
 private:
   sf::RenderWindow window;
   sf::View view;
+  sf::View guiView;
 
   Grid grid;
+  std::vector<Grid> history;
 
   sf::Cursor cursorDefault;
   sf::Cursor cursorPointer;
   sf::Cursor cursorGrab;
   sf::Cursor cursorCrosshair;
+  sf::Cursor cursorPointerBlock;
+  sf::Cursor cursorGrabBlock;
 
   sf::RectangleShape selectionBox;
 
@@ -32,7 +36,11 @@ private:
 
   bool selecting = false;
 
+  sf::RoundedRectangleShape sliderBackground;
+  gui::Slider slider;
   float zoom = 1.5f;
+  float maxZoom = 5.5f;
+  float minZoom = 0.5f;
 
   void hover(const sf::Vector2f& pos);
 };
