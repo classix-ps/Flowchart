@@ -46,4 +46,7 @@ private:
   bool previouslyAdding = false;
 
   void hover(const sf::Vector2f& pos);
+  void hoverNodeOutline(const sf::Vector2f& pos);
+
+  sf::Vector2i handleEvent(const sf::Event& event);
 };

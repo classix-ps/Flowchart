@@ -261,6 +261,7 @@ bool Grid::highlightSingle(const sf::Vector2f& pos) {
     if (!selectedNode) {
       if (nodes[i].contains(pos)) {
         nodes[i].setState(NodeState::Highlighted);
+        highlights.insert(i);
       }
       else {
         nodes[i].setState(NodeState::Locked);
@@ -290,7 +291,7 @@ void Grid::highlightSelect(const sf::FloatRect& box) {
     sf::FloatRect boundingRect = nodes[i].getBounds();
     if (box.contains(sf::Vector2f(boundingRect.left + boundingRect.width, boundingRect.top))
       && box.contains(sf::Vector2f(boundingRect.left, boundingRect.top + boundingRect.height))) {
-      highlights.push_back(i);
+      highlights.insert(i);
       nodes[i].setState(NodeState::Highlighted);
     }
     else {

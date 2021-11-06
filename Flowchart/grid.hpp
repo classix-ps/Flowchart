@@ -54,7 +54,7 @@ private:
   Arrow arrowOutline;
 
   std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>> selections;
-  std::vector<size_t> highlights;
+  std::set<size_t> highlights;
   size_t editing = 0;
 
   sf::Vector2f cellToPos(const sf::Vector2i& cell) const;

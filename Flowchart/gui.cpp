@@ -92,6 +92,16 @@ void Gui::draw(sf::RenderWindow& window) const {
 }
 
 bool Gui::onGui(int x, int y) const {
+  for (std::map<ButtonUse, gui::SpriteButton>::const_iterator iter = dynamic.begin(); iter != dynamic.end(); iter++) {
+    if (iter->second.getState() == gui::StatePressed) {
+      return true;
+    }
+  }
+  for (std::map<ButtonUse, gui::SpriteButton>::const_iterator iter = clickable.begin(); iter != clickable.end(); iter++) {
+    if (iter->second.getState() == gui::StatePressed) {
+      return true;
+    }
+  }
   return slots.getGlobalBounds().contains(float(x), float(y)) || slider.containsPoint(sf::Vector2f(float(x), float(y)) - slider.getPosition());
 }
 
