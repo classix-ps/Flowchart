@@ -94,3 +94,7 @@ void Node::point(size_t i) {
 bool Node::pointsTo(size_t i) const {
   return std::find(pointing.begin(), pointing.end(), i) != pointing.end();
 }
+
+void Node::removePointing(size_t i) {
+  pointing.erase(i);
+}

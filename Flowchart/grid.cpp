@@ -334,10 +334,38 @@ void Grid::deleteSelected() {
         arrows[i].setDestinationNode(arrows[i].getDestinationNode() - (arrows[i].getDestinationNode() > iter->first));
       }
     }
-
   }
 
   selections.clear();
+}
+
+bool Grid::selectArrow(const sf::Vector2f& pos) {
+  for (size_t i = 0; i < arrows.size(); i++) {
+    if (arrows[i].onArrow(pos)) {
+      arrows[i].highlight();
+      selectedArrows.insert(i);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void Grid::deselectArrows() {
+  for (const size_t& i : selectedArrows) {
+    arrows[i].lock();
+  }
+
+  selectedArrows.clear();
+}
+
+void Grid::deleteSelectedArrows() {
+  for (std::set<size_t>::reverse_iterator iter = selectedArrows.rbegin(); iter != selectedArrows.rend(); iter++) {
+    nodes[arrows[*iter].getOriginNode()].removePointing(arrows[*iter].getDestinationNode());
+    arrows.erase(arrows.begin() + *iter);
+  }
+
+  selectedArrows.clear();
 }
 
 void Grid::addText(sf::Uint32 unicode) {

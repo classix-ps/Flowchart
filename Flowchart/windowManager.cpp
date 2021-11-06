@@ -192,6 +192,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     // Enter add state
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::E) {
       grid.deselect(true);
+      grid.deselectArrows();
       hoverNodeOutline(globalPos);
       state = State::Add;
     }
@@ -203,7 +204,10 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
         state = State::Connect;
       }
       else {
-        // TODO: Delete arrow
+        if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+          grid.deselectArrows();
+        }
+        grid.selectArrow(globalPos);
       }
     }
     // Hovering
@@ -226,6 +230,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     // Delete selected nodes
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Delete) {
       grid.deleteSelected();
+      grid.deleteSelectedArrows();
     }
     // Return to origin
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
@@ -369,6 +374,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
       window.setMouseCursor(cursorGrab);
       oldPos = globalPos;
       grid.deselect(true);
+      grid.deselectArrows();
       grid.dehighlight();
     }
     // Cancel selection if not yet started

@@ -19,6 +19,24 @@ void Arrow::draw(sf::RenderWindow& window) const {
   window.draw(head);
 }
 
+bool Arrow::onArrow(const sf::Vector2f& pos) {
+  return directLine.getBounds().contains(pos) || head.getGlobalBounds().contains(pos);
+}
+
+void Arrow::highlight() {
+  for (size_t i = 0; i < 4; i++) {
+    directLine[i].color = sf::Color(0, 0, 153, 255);
+  }
+  head.setFillColor(sf::Color(0, 0, 153, 255));
+}
+
+void Arrow::lock() {
+  for (size_t i = 0; i < 4; i++) {
+    directLine[i].color = sf::Color::Black;
+  }
+  head.setFillColor(sf::Color::Black);
+}
+
 void Arrow::setOrigin(const sf::Vector2f& pos) {
   origin = pos;
 }

@@ -11,6 +11,11 @@ public:
 
   void draw(sf::RenderWindow& window) const;
 
+  bool onArrow(const sf::Vector2f& pos);
+
+  void highlight();
+  void lock();
+
   void setOrigin(const sf::Vector2f& pos);
   void setDestination(const sf::Vector2f& pos);
   void setOriginNode(size_t index);

@@ -30,6 +30,7 @@ public:
 
   void point(size_t i);
   bool pointsTo(size_t i) const;
+  void removePointing(size_t i);
 
   static sf::RoundedRectangleShape fieldTmplt;
 

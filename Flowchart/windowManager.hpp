@@ -2,6 +2,7 @@
 
 #include "grid.hpp"
 #include "gui.hpp"
+#include <stack>
 
 enum class State { View, Add, Connect, Move, MoveNode, Select, Text, Zoom };
 
@@ -18,7 +19,7 @@ private:
   sf::View guiView;
 
   Grid grid;
-  std::vector<Grid> history;
+  std::stack<Grid> history;
 
   sf::Cursor cursorDefault;
   sf::Cursor cursorPointer;

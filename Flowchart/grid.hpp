@@ -27,6 +27,10 @@ public:
   void setSelectionsMovement();
   void deleteSelected();
 
+  bool selectArrow(const sf::Vector2f& pos);
+  void deselectArrows();
+  void deleteSelectedArrows();
+
   void addText(sf::Uint32 unicode);
   void confirmText();
   void applyToText(const sf::Event::KeyEvent& key);
@@ -56,6 +60,8 @@ private:
   std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>> selections;
   std::set<size_t> highlights;
   size_t editing = 0;
+
+  std::set<size_t> selectedArrows;
 
   sf::Vector2f cellToPos(const sf::Vector2i& cell) const;
   sf::Vector2i posToCell(const sf::Vector2f& pos) const;
