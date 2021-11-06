@@ -347,6 +347,10 @@ void Grid::confirmText() {
   nodes[editing].setTextboxState(gui::State::StateDefault);
 }
 
+void Grid::applyToText(const sf::Event::KeyEvent& key) {
+  nodes[editing].applyToText(key);
+}
+
 bool Grid::onEdit(const sf::Vector2f& pos) const {
   return nodes[editing].onTextbox(pos);
 }
@@ -370,6 +374,10 @@ bool Grid::setNodeOutlinePosition(const sf::Vector2f& pos) {
 
 void Grid::setArrowOutlinePosition(const sf::Vector2f& pos) {
   arrowOutline.setDestination(pos);
+}
+
+void Grid::save() const {
+
 }
 
 void Grid::saveToJson() const {

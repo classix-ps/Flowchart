@@ -1,6 +1,7 @@
 #pragma once
 
 #include "grid.hpp"
+#include "gui.hpp"
 
 enum class State { View, Add, Connect, Move, MoveNode, Select, SelectNode, Text, Zoom };
 
@@ -36,11 +37,13 @@ private:
 
   bool selecting = false;
 
-  sf::RoundedRectangleShape sliderBackground;
-  gui::Slider slider;
   float zoom = 1.5f;
   float maxZoom = 5.5f;
   float minZoom = 0.5f;
+
+  Gui gui;
+
+  bool previouslyAdding = false;
 
   void hover(const sf::Vector2f& pos);
 };

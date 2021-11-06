@@ -5,7 +5,6 @@
 #include "node.hpp"
 #include <array>
 
-
 class Arrow {
 public:
   Arrow();

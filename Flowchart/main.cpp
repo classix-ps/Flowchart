@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-//#define NODEMO
+#define NODEMO
 #include "windowManager.hpp"
 #ifdef NODEMO
 int main() {
@@ -70,10 +70,19 @@ int main()
   slider->setStep(2);
 
   sf::Texture buttonImg;
-  buttonImg.loadFromFile("C:/Users/psusk/source/repos/C++/Flowchart/Resources/textures/addTx.png");
-  //buttonImg.loadFromFile("demo/themed-button.png");
+  buttonImg.loadFromFile("C:/Users/psusk/source/repos/C++/Flowchart/Resources/textures/randomTx.png");
   gui::SpriteButton* button = new gui::SpriteButton(buttonImg);
   button->setPosition(sf::Vector2f(100.f, 100.f));
+
+  sf::Texture buttonImg2;
+  buttonImg2.loadFromFile("C:/Users/psusk/source/repos/C++/Flowchart/Resources/textures/addTx.png");
+  gui::SpriteButton* button2 = new gui::SpriteButton(buttonImg2);
+  button2->setPosition(sf::Vector2f(149.f, 100.f));
+
+  sf::Texture slotsTx;
+  slotsTx.loadFromFile("C:/Users/psusk/source/repos/C++/Flowchart/Resources/textures/slots.png");
+  sf::Sprite slots(slotsTx);
+  slots.setPosition(95.f, 95.f);
 
   // Start the application loop
   while (app.isOpen())
@@ -100,9 +109,14 @@ int main()
           button->onMousePressed(event.mouseButton.x - button->getPosition().x, event.mouseButton.y - button->getPosition().y);
           button->onStateChanged(gui::State::StatePressed);
         }
+        else if (button2->containsPoint(sf::Vector2f(event.mouseButton.x, event.mouseButton.y) - button2->getPosition())) {
+          button2->onMousePressed(event.mouseButton.x - button2->getPosition().x, event.mouseButton.y - button2->getPosition().y);
+          button2->onStateChanged(gui::State::StatePressed);
+        }
         else {
           textbox->onStateChanged(gui::State::StateDefault);
           button->onStateChanged(gui::State::StateDefault);
+          button2->onStateChanged(gui::State::StateDefault);
         }
       }
       else if (event.type == sf::Event::MouseMoved) {
@@ -110,6 +124,16 @@ int main()
         button->onMouseMoved(event.mouseMove.x - button->getPosition().x, event.mouseMove.y - button->getPosition().y);
         if (button->containsPoint(sf::Vector2f(event.mouseMove.x, event.mouseMove.y) - button->getPosition())) {
           button->onStateChanged(gui::State::StateHovered);
+        }
+        else {
+          button->onStateChanged(gui::State::StateDefault);
+        }
+        button2->onMouseMoved(event.mouseMove.x - button2->getPosition().x, event.mouseMove.y - button2->getPosition().y);
+        if (button2->containsPoint(sf::Vector2f(event.mouseMove.x, event.mouseMove.y) - button2->getPosition())) {
+          button2->onStateChanged(gui::State::StateHovered);
+        }
+        else {
+          button2->onStateChanged(gui::State::StateDefault);
         }
       }
 
@@ -119,9 +143,11 @@ int main()
 
     // Clear screen
     app.clear(sf::Color::White);
+    app.draw(slots);
     app.draw(*textbox);
     app.draw(*slider);
     app.draw(*button);
+    app.draw(*button2);
     app.display();
     //std::cout << textbox->getText().toAnsiString() << std::endl;
     //std::cout << sf::Mouse::getPosition().y << std::endl;

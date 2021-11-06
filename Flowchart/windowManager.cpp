@@ -1,10 +1,10 @@
 #include "windowManager.hpp"
 
-WindowManager::WindowManager() : state{ State::View }, slider{ 400.f, gui::Slider::Type::Vertical } {
+WindowManager::WindowManager() : state{ State::View } {
 
 }
 
-WindowManager::WindowManager(unsigned int width, unsigned int height) : window{ sf::VideoMode(width, height), "Flowchart Creator" }, grid{ sf::Vector2u(width, height) }, state{ State::View }, slider{ float(height) / 3, gui::Slider::Type::Vertical } {
+WindowManager::WindowManager(unsigned int width, unsigned int height) : window{ sf::VideoMode(width, height), "Flowchart Creator" }, gui{ width, height, zoom, minZoom, maxZoom }, grid{ sf::Vector2u(width, height) }, state{ State::View } {
   std::string path = "../Resources/";
   
   // Icon
@@ -47,30 +47,9 @@ WindowManager::WindowManager(unsigned int width, unsigned int height) : window{ 
   // Gui View
   guiView = window.getDefaultView();
 
-  // Slider
-  slider.setStep(2);
-  slider.setPosition(width * 0.95f, (height - slider.getSize().y) / 2);
-  slider.setValue(int(100 * (zoom - minZoom) / (maxZoom - minZoom)));
-  slider.setCallback([&]() {
-    zoom = minZoom + slider.getValue() * (maxZoom - minZoom) / 100;
-    view.setSize(window.getDefaultView().getSize());
-    view.zoom(zoom);
-    window.setView(view);
-    });
-
-  // Slider background
-  sliderBackground.setSize(slider.getSize());
-  sliderBackground.setCornersRadius(10.f);
-  sliderBackground.setCornerPointCount(50);
-  sliderBackground.setFillColor(sf::Color(80, 80, 80));
-  sliderBackground.setOutlineColor(sf::Color(50, 50, 50, 150));
-  sliderBackground.setOutlineThickness(1.f);
-  sliderBackground.setPosition(slider.getPosition());
-
   // View
   view = window.getDefaultView();
   view.zoom(zoom);
-  window.setView(view);
 }
 
 void WindowManager::hover(const sf::Vector2f& pos) {
@@ -102,7 +81,7 @@ void WindowManager::run() {
         else if (event.mouseWheelScroll.delta > 0) {
           zoom = std::max(minZoom, zoom - 0.05f);
         }
-        slider.setValue(int(100 * (zoom - minZoom) / (maxZoom - minZoom)));
+        gui.setSliderValue(int(100 * (zoom - minZoom) / (maxZoom - minZoom)));
         
         view.setSize(window.getDefaultView().getSize());
         view.zoom(zoom);
@@ -113,15 +92,19 @@ void WindowManager::run() {
       switch (state) {
       case State::View:
       {
-        // Hover node
-        hover(globalPos);
-
         // Move view or node
         if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-          if (slider.containsPoint(sf::Vector2f(float(event.mouseButton.x), float(event.mouseButton.y)) - slider.getPosition())) {
-            slider.onMousePressed(event.mouseButton.x - slider.getPosition().x, event.mouseButton.y - slider.getPosition().y);
-            state = State::Zoom;
+          // Gui
+          if (gui.onGui(event.mouseButton.x, event.mouseButton.y)) {
+            ButtonUse action = gui.onButton(event.mouseButton.x, event.mouseButton.y, true);
+            if (action != ButtonUse::None) {
+
+            }
+            else if (gui.onSlider(event.mouseButton.x, event.mouseButton.y)) {
+              state = State::Zoom;
+            }
           }
+          // Grid
           else {
             int onNode = grid.grab(globalPos);
             if (onNode == 0) {
@@ -137,6 +120,10 @@ void WindowManager::run() {
               state = State::Text;
             }
           }
+        }
+        // Release gui
+        else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+          gui.releaseButton(event.mouseButton.x, event.mouseButton.y);
         }
         // Enter add state
         else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::E) {
@@ -159,6 +146,11 @@ void WindowManager::run() {
           else {
             // TODO: Delete arrow
           }
+        }
+        // Hovering
+        else if (event.type == sf::Event::MouseMoved) {
+          hover(globalPos);
+          gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
         }
         // Enter select state
         else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LShift) {
@@ -187,17 +179,38 @@ void WindowManager::run() {
           hover(globalPos);
           state = State::View;
         }
-        // Create node
+        // Create node or press gui
         else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-          grid.addNode();
-        }
-        // Show node outline
-        else {
-          if (grid.setNodeOutlinePosition(globalPos)) {
-            window.setMouseCursor(cursorPointer);
+          if (gui.onGui(event.mouseButton.x, event.mouseButton.y)) {
+            ButtonUse action = gui.onButton(event.mouseButton.x, event.mouseButton.y, true);
+            if (action != ButtonUse::None) {
+
+            }
+            else if (gui.onSlider(event.mouseButton.x, event.mouseButton.y)) {
+              previouslyAdding = true;
+              state = State::Zoom;
+            }
           }
           else {
-            window.setMouseCursor(cursorPointerBlock);
+            grid.addNode();
+          }
+        }
+        // Release gui
+        else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+          gui.releaseButton(event.mouseButton.x, event.mouseButton.y);
+        }
+        // Show node outline if not hovering over gui
+        else if (event.type == sf::Event::MouseMoved) {
+          if (gui.onGui(event.mouseMove.x, event.mouseMove.y)) {
+            gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
+          }
+          else {
+            if (grid.setNodeOutlinePosition(globalPos)) {
+              window.setMouseCursor(cursorPointer);
+            }
+            else {
+              window.setMouseCursor(cursorPointerBlock);
+            }
           }
         }
 
@@ -332,6 +345,10 @@ void WindowManager::run() {
           hover(globalPos);
           state = State::View;
         }
+        // Keys regarding text
+        else if (event.type == sf::Event::KeyPressed) {
+          grid.applyToText(event.key);
+        }
         // Confirm/set cursor
         else if (event.type == sf::Event::MouseButtonPressed) {
           if (grid.onEdit(globalPos)) {
@@ -350,36 +367,75 @@ void WindowManager::run() {
       };
       case State::Zoom:
       {
-        if (event.type == sf::Event::MouseMoved) {
-          slider.onMouseMoved(event.mouseMove.x - slider.getPosition().x, event.mouseMove.y - slider.getPosition().y);
+        // Enter view state
+        if (event.type == sf::Event::MouseButtonReleased) {
+          gui.releaseSlider(event.mouseButton.x, event.mouseButton.y);
+          if (previouslyAdding) {
+            state = State::Add;
+            if (!gui.onGui(mousePosPx.x, mousePosPx.y)) {
+              if (grid.setNodeOutlinePosition(globalPos)) {
+                window.setMouseCursor(cursorPointer);
+              }
+              else {
+                window.setMouseCursor(cursorPointerBlock);
+              }
+          }
+            previouslyAdding = false;
+          }
+          else {
+            state = State::View;
+          }
         }
-        else if (event.type == sf::Event::MouseButtonReleased) {
-          slider.onMouseReleased(event.mouseButton.x - slider.getPosition().x, event.mouseButton.y - slider.getPosition().y);
-          state = State::View;
+        // Move slider and zoom
+        else if (event.type == sf::Event::MouseMoved) {
+          gui.moveSlider(event.mouseMove.x, event.mouseMove.y);
+          zoom = minZoom + gui.getSliderValue() * (maxZoom - minZoom) / 100;
+          view.setSize(window.getDefaultView().getSize());
+          view.zoom(zoom);
+          window.setView(view);
         }
 
         break;
       };
       }
 
+      // Static states can be drawn only when something changes
+      if (state != State::Text) {
+        window.clear(sf::Color::White);
+        window.setView(view);
+        switch (state) {
+        case State::Add:
+          if (gui.onGui(mousePosPx.x, mousePosPx.y)) {
+            window.setMouseCursor(cursorDefault);
+            grid.draw(window);
+          }
+          else {
+            grid.draw(window, 1);
+          }
+          break;
+        case State::Connect:
+          grid.draw(window, 2);
+          break;
+        default:
+          grid.draw(window);
+          break;
+        }
+        if (selecting) {
+          window.draw(selectionBox);
+        }
+        window.setView(guiView);
+        gui.draw(window);
+        window.setView(view);
+        window.display();
+      }
+    }
+
+    // Dynamic states need to be drawn every cycle
+    if (state == State::Text) {
       window.clear(sf::Color::White);
-      switch (state) {
-      case State::Add:
-        grid.draw(window, 1);
-        break;
-      case State::Connect:
-        grid.draw(window, 2);
-        break;
-      default:
-        grid.draw(window);
-        break;
-      }
-      if (selecting) {
-        window.draw(selectionBox);
-      }
+      grid.draw(window);
       window.setView(guiView);
-      window.draw(sliderBackground);
-      window.draw(slider);
+      gui.draw(window);
       window.setView(view);
       window.display();
     }

@@ -83,6 +83,10 @@ void Node::setTextCursor(const sf::Vector2f& pos) {
   textbox.onMousePressed(textPos.x, textPos.y);
 }
 
+void Node::applyToText(const sf::Event::KeyEvent& key) {
+  textbox.onKeyPressed(key);
+}
+
 void Node::point(size_t i) {
   pointing.insert(i);
 }

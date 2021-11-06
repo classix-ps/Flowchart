@@ -29,6 +29,7 @@ public:
 
   void addText(sf::Uint32 unicode);
   void confirmText();
+  void applyToText(const sf::Event::KeyEvent& key);
   bool onEdit(const sf::Vector2f& pos) const;
   void setTextCursor(const sf::Vector2f& pos);
 
@@ -36,6 +37,7 @@ public:
 
   void setArrowOutlinePosition(const sf::Vector2f& pos);
 
+  void save() const;
   void saveToJson() const;
 
 private:

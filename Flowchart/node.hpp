@@ -2,8 +2,6 @@
 
 #include <set>
 #include "roundedRectangle.hpp"
-#include "Gui/Menu.hpp"
-#include "Gui/Theme.hpp"
 #include "Gui/Gui.hpp"
 
 enum class NodeState { Placing, Highlighted, Selected, Moving, Locked };
@@ -28,6 +26,7 @@ public:
   void addText(sf::Uint32 unicode);
   void setTextboxState(gui::State textboxState);
   void setTextCursor(const sf::Vector2f& pos);
+  void applyToText(const sf::Event::KeyEvent& key);
 
   void point(size_t i);
   bool pointsTo(size_t i) const;
