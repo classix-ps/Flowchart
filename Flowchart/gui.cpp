@@ -6,7 +6,7 @@ Gui::Gui() : slider{ 400.f, gui::Slider::Type::Vertical } {
 
 Gui::Gui(unsigned int width, unsigned int height, float zoom, float minZoom, float maxZoom) : slider{ float(height) / 3, gui::Slider::Type::Vertical, 20 } {
   // Slider
-  slider.setStep(2);
+  slider.setStep(1);
   slider.setPosition(width * 0.98f, (height - slider.getSize().y) / 2);
   slider.setValue(int(100 * (zoom - minZoom) / (maxZoom - minZoom)));
 
@@ -200,5 +200,14 @@ void Gui::releaseButton(int x, int y) {
     else {
       iter->second.onStateChanged(gui::State::StateDefault);
     }
+  }
+}
+
+void Gui::resetButtons() {
+  for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = dynamic.begin(); iter != dynamic.end(); iter++) {
+    iter->second.onStateChanged(gui::StateDefault);
+  }
+  for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = clickable.begin(); iter != clickable.end(); iter++) {
+    iter->second.onStateChanged(gui::StateDefault);
   }
 }

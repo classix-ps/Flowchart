@@ -24,6 +24,7 @@ public:
 
   ButtonUse onButton(int x, int y, bool click);
   void releaseButton(int x, int y);
+  void resetButtons();
 
 private:
   sf::RoundedRectangleShape sliderBackground;

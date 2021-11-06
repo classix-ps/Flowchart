@@ -163,6 +163,9 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
         }
       }
       // Grid
+      else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+        grid.select(globalPos);
+      }
       else {
         int onNode = grid.grab(globalPos);
         if (onNode == 0) {
@@ -182,6 +185,9 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     // Release gui
     else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
       gui.releaseButton(event.mouseButton.x, event.mouseButton.y);
+      if (!gui.onGui(event.mouseButton.x, event.mouseButton.y)) {
+        hover(globalPos);
+      }
     }
     // Enter add state
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::E) {
@@ -208,6 +214,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
         gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
       }
       else {
+        gui.resetButtons();
         hover(globalPos);
       }
     }
@@ -215,10 +222,6 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LShift) {
       oldPos = globalPos;
       state = State::Select;
-    }
-    // Enter select node state
-    else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
-      state = State::SelectNode;
     }
     // Delete selected nodes
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Delete) {
@@ -228,6 +231,14 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
       view.setCenter(window.getSize().x / 2.f, window.getSize().y / 2.f);
     }
+    // Save
+    else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+      //TODO
+    }
+    // Undo
+    else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+      //TODO
+    }
 
     break;
   };
@@ -235,8 +246,8 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
   {
     // Enter view state
     if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::E) {
-      hover(globalPos);
       state = State::View;
+      hover(globalPos);
     }
     // Create node or press gui
     else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
@@ -265,6 +276,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
         gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
       }
       else {
+        gui.resetButtons();
         hoverNodeOutline(globalPos);
       }
     }
@@ -280,7 +292,14 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     // Create arrow, enter view state
     if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Right) {
       grid.addArrow();
-      hover(globalPos);
+      if (gui.onGui(event.mouseMove.x, event.mouseMove.y)) {
+        window.setMouseCursor(cursorDefault);
+        grid.dehighlight();
+        gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
+      }
+      else {
+        hover(globalPos);
+      }
       state = State::View;
     }
     // Show arrow outline
@@ -315,11 +334,17 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     // Enter view state
     if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
       grid.confirmMove();
-
       grid.deselect();
       grid.setSelectionsMovement();
-      window.setMouseCursor(cursorPointer);
-      hover(globalPos);
+      if (gui.onGui(event.mouseMove.x, event.mouseMove.y)) {
+        window.setMouseCursor(cursorDefault);
+        grid.dehighlight();
+        gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
+      }
+      else {
+        window.setMouseCursor(cursorPointer);
+        hover(globalPos);
+      }
       state = State::View;
     }
     // Move node(s)
@@ -349,7 +374,14 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     // Cancel selection if not yet started
     else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::LShift) {
       if (!selecting) {
-        hover(globalPos);
+        if (gui.onGui(event.mouseMove.x, event.mouseMove.y)) {
+          window.setMouseCursor(cursorDefault);
+          grid.dehighlight();
+          gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
+        }
+        else {
+          hover(globalPos);
+        }
         state = State::View;
       }
     }
@@ -357,37 +389,20 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
       selecting = false;
       grid.selectHighlighted(globalPos);
-      hover(globalPos);
+      if (gui.onGui(event.mouseMove.x, event.mouseMove.y)) {
+        window.setMouseCursor(cursorDefault);
+        grid.dehighlight();
+        gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
+      }
+      else {
+        hover(globalPos);
+      }
       state = State::View;
     }
     // Highlight selected nodes
     else {
       selectionBox.setSize(globalPos - oldPos);
       grid.highlightSelect(selectionBox.getGlobalBounds());
-    }
-
-    break;
-  };
-  case State::SelectNode:
-  {
-    // Enter view state
-    if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::LControl) {
-      state = State::View;
-    }
-    // Select node
-    else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-      grid.select(globalPos);
-    }
-    // Save
-    else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S) {
-      // TODO
-    }
-    // Undo
-    else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z) {
-      // TODO
-    }
-    else {
-      hover(globalPos);
     }
 
     break;
@@ -460,6 +475,14 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
         previouslyAdding = false;
       }
       else {
+        if (gui.onGui(event.mouseMove.x, event.mouseMove.y)) {
+          window.setMouseCursor(cursorDefault);
+          grid.dehighlight();
+          gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
+        }
+        else {
+          hover(globalPos);
+        }
         state = State::View;
       }
     }

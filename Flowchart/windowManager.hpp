@@ -3,7 +3,7 @@
 #include "grid.hpp"
 #include "gui.hpp"
 
-enum class State { View, Add, Connect, Move, MoveNode, Select, SelectNode, Text, Zoom };
+enum class State { View, Add, Connect, Move, MoveNode, Select, Text, Zoom };
 
 class WindowManager {
 public:
