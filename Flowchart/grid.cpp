@@ -332,6 +332,12 @@ void Grid::setSelectionsMovement() {
 void Grid::deleteSelected() {
   for (std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>>::reverse_iterator iter = selections.rbegin(); iter != selections.rend(); iter++) {
     nodes.erase(nodes.begin() + iter->first);
+
+    for (Node& node : nodes) {
+      node.removePointing(iter->first);
+      node.lowerPointing(iter->first);
+    }
+
     for (int i = arrows.size() - 1; i > -1; i--) {
       if (arrows[i].getOriginNode() == iter->first || arrows[i].getDestinationNode() == iter->first) {
         arrows.erase(arrows.begin() + i);
@@ -413,9 +419,26 @@ void Grid::setArrowOutlinePosition(const sf::Vector2f& pos) {
 }
 
 void Grid::save() const {
+  std::ofstream gridFile("grid.csv");
+  for (const Node& node : nodes) {
+    gridFile << node.getText().toAnsiString() << ';';
+    for (const size_t& pointed : node.getPointed()) {
+      gridFile << nodes[pointed].getText().toAnsiString() << ';';
+    }
+    gridFile << std::endl;
+  }
 
+  gridFile.close();
 }
 
 void Grid::saveToJson() const {
+
+}
+
+void Grid::load() {
+
+}
+
+void Grid::loadFromJson() {
 
 }

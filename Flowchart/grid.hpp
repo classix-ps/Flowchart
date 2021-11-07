@@ -2,6 +2,7 @@
 
 #include "node.hpp"
 #include "arrow.hpp"
+#include <fstream>
 
 class Grid {
 public:
@@ -43,6 +44,9 @@ public:
 
   void save() const;
   void saveToJson() const;
+
+  void load();
+  void loadFromJson();
 
 private:
   int gridSpaces = 20;

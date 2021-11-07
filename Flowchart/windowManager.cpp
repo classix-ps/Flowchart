@@ -132,9 +132,11 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
   sf::Vector2f mousePos = sf::Vector2f(mousePosPx);
   sf::Vector2f globalPos = window.mapPixelToCoords(mousePosPx);
 
+  // Close window
   if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)) {
     window.close();
   }
+  // Zoom with mouse wheel
   else if (event.type == sf::Event::MouseWheelScrolled) {
     if (event.mouseWheelScroll.delta < 0) {
       zoom = std::min(maxZoom, zoom + 0.05f);
@@ -149,6 +151,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     window.setView(view);
     globalPos = window.mapPixelToCoords(mousePosPx);
   }
+  // Undo
   else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
     if (history.size() > 1) {
       history.pop();
@@ -165,6 +168,10 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
         state = State::View;
       }
     }
+  }
+  // Save
+  else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+    grid.save();
   }
 
   switch (state) {
@@ -255,10 +262,6 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     // Return to origin
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
       view.setCenter(window.getSize().x / 2.f, window.getSize().y / 2.f);
-    }
-    // Save
-    else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
-      //TODO
     }
 
     break;

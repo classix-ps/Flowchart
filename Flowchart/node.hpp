@@ -22,15 +22,18 @@ public:
   sf::Vector2f getCenter() const;
   sf::FloatRect getBounds() const;
   NodeState getState() const;
+  std::set<size_t> getPointed() const;
 
   void addText(sf::Uint32 unicode);
   void setTextboxState(gui::State textboxState);
   void setTextCursor(const sf::Vector2f& pos);
   void applyToText(const sf::Event::KeyEvent& key);
+  sf::String getText() const;
 
   void point(size_t i);
   bool pointsTo(size_t i) const;
   void removePointing(size_t i);
+  void lowerPointing(size_t i);
 
   static sf::RoundedRectangleShape fieldTmplt;
 

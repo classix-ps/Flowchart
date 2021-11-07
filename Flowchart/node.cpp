@@ -70,6 +70,10 @@ NodeState Node::getState() const {
   return state;
 }
 
+std::set<size_t> Node::getPointed() const {
+  return pointing;
+}
+
 void Node::addText(sf::Uint32 unicode) {
   textbox.onTextEntered(unicode);
 }
@@ -87,6 +91,10 @@ void Node::applyToText(const sf::Event::KeyEvent& key) {
   textbox.onKeyPressed(key);
 }
 
+sf::String Node::getText() const {
+  return textbox.getText();
+}
+
 void Node::point(size_t i) {
   pointing.insert(i);
 }
@@ -97,4 +105,15 @@ bool Node::pointsTo(size_t i) const {
 
 void Node::removePointing(size_t i) {
   pointing.erase(i);
+}
+
+void Node::lowerPointing(size_t i) {
+  std::set<size_t> greaterValues;
+  for (std::set<size_t>::iterator iter = pointing.upper_bound(i); iter != pointing.end(); iter++) {
+    greaterValues.insert(*iter);
+  }
+  for (const size_t& val : greaterValues) {
+    pointing.erase(val);
+    pointing.insert(val - 1);
+  }
 }
