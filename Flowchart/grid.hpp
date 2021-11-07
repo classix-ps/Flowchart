@@ -10,15 +10,15 @@ public:
 
   void draw(sf::RenderWindow& window, int drawOutlines=0) const;
 
-  void addNode();
-  void addArrow();
+  bool addNode();
+  bool addArrow();
 
   bool startArrow(const sf::Vector2f& pos);
   void select(const sf::Vector2f& pos);
   int grab(const sf::Vector2f& pos);
   void deselect(bool force=false);
   bool move(const sf::Vector2f& delta);
-  void confirmMove();
+  bool confirmMove();
   bool highlightSingle(const sf::Vector2f& pos);
   void highlightArrow(const sf::Vector2f& pos);
   void highlightSelect(const sf::FloatRect& box);

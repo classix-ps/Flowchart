@@ -80,20 +80,24 @@ void Grid::draw(sf::RenderWindow& window, int outlines) const {
   }
 }
 
-void Grid::addNode() {
+bool Grid::addNode() {
   if (validCell(posToCell(nodeOutline.getCenter()))) {
     nodes.push_back(nodeOutline);
     nodes.back().setState(NodeState::Locked);
+    return true;
+  }
+  else {
+    return false;
   }
 }
 
-void Grid::addArrow() {
+bool Grid::addArrow() {
   sf::Vector2f destination = arrowOutline.getDestination();
   for (size_t i = 0; i < nodes.size(); i++) {
     if (nodes[i].contains(destination) && arrowOutline.getOriginNode() != i && !nodes[arrowOutline.getOriginNode()].pointsTo(i)) {
       // Disallows double-ended arrows
       if (nodes[i].pointsTo(arrowOutline.getOriginNode())) {
-        break;
+        return false;
       }
 
       arrowOutline.setDestinationNode(i);
@@ -101,13 +105,14 @@ void Grid::addArrow() {
 
       arrowOutline.setDestination(nodes[i].getCenter());
       arrowOutline.setHead(nodes[i].getBounds());
-      arrowOutline.setDirectLineColor(sf::Color::Black);
       arrows.push_back(arrowOutline);
-      arrowOutline.setDirectLineColor(sf::Color(0, 102, 51, 255));
+      arrows.back().setDirectLineColor(sf::Color::Black);
 
-      break;
+      return true;
     }
   }
+
+  return false;
 }
 
 bool Grid::startArrow(const sf::Vector2f& pos) {
@@ -211,7 +216,7 @@ bool Grid::move(const sf::Vector2f& pos) {
   return validPositions;
 }
 
-void Grid::confirmMove() {
+bool Grid::confirmMove() {
   bool validPositions = true;
   for (const std::pair<size_t, std::pair<sf::Vector2f, sf::Vector2f>>& select : selections) {
     if (!validCell(posToCell(nodes[select.first].getCenter()))) {
@@ -244,6 +249,8 @@ void Grid::confirmMove() {
       }
     }
   }
+
+  return validPositions;
 }
 
 bool Grid::highlightSingle(const sf::Vector2f& pos) {
