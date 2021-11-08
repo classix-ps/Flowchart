@@ -12,15 +12,33 @@ Arrow::Arrow() : head{ 4.f * Node::fieldTmplt.getOutlineThickness(), 3 }, direct
 }
 
 void Arrow::draw(sf::RenderWindow& window) const {
-  for (const sf::VertexArray segment : segments) {
-    window.draw(segment);
+  sf::View view = window.getView();
+  sf::FloatRect viewRect(view.getCenter() - view.getSize() / 2.f, view.getSize());
+  if (directLine.getBounds().intersects(viewRect) || head.getGlobalBounds().intersects(viewRect)) {
+    window.draw(directLine);
+    window.draw(head);
   }
-  window.draw(directLine);
-  window.draw(head);
 }
 
 bool Arrow::onArrow(const sf::Vector2f& pos) {
-  return directLine.getBounds().contains(pos) || head.getGlobalBounds().contains(pos);
+  if (directLine.getBounds().contains(pos)) {
+    sf::Vector2f delta = destination - origin;
+
+    float theta = atan2(delta.y, delta.x);
+
+    float vert = abs(0.75f * Node::fieldTmplt.getOutlineThickness() / cos(theta));
+
+    float m = delta.y / delta.x;
+
+    float lineCenter = origin.y + m * (pos.x - origin.x);
+    if (pos.y > lineCenter - vert && pos.y < lineCenter + vert) {
+      return true;
+    }
+  }
+  if (head.getGlobalBounds().contains(pos)) {
+
+  }
+  return false;
 }
 
 void Arrow::highlight() {

@@ -49,8 +49,8 @@ int main()
   // Create the main window
   sf::RenderWindow app(sf::VideoMode(1920, 1080), "SFML Widgets", sf::Style::Close);
 
-  gui::Theme::loadFont("demo/tahoma.ttf");
-  gui::Theme::loadTexture("demo/texture-default.png");
+  gui::Theme::loadFont("../Resources/fonts/tahoma.ttf");
+  gui::Theme::loadTexture("../Resources/theme/texture-default.png");
   gui::Theme::textSize = 11;
   gui::Theme::PADDING = 1.f;
   //gui::Theme::windowBgColor = defaultTheme.backgroundColor;
@@ -63,7 +63,7 @@ int main()
   textbox->setCallback([&]() {
 
     });
-  textbox->setPosition(1080, 480);
+  textbox->setPosition(100, 480);
 
   gui::Slider* slider = new gui::Slider(200.f, gui::Slider::Type::Vertical);
   slider->setPosition(1800, 400);

@@ -14,8 +14,12 @@ Node::Node(const sf::Vector2f& pos) : textbox{ 250.f } {
 }
 
 void Node::draw(sf::RenderWindow& window) const {
-  window.draw(field);
-  window.draw(textbox);
+  sf::View view = window.getView();
+  sf::FloatRect viewRect(view.getCenter() - view.getSize() / 2.f, view.getSize());
+  if (field.getGlobalBounds().intersects(viewRect)) {
+    window.draw(field);
+    window.draw(textbox);
+  }
 }
 
 bool Node::contains(const sf::Vector2f& pos) const {

@@ -329,7 +329,7 @@ void Grid::setSelectionsMovement() {
   }
 }
 
-void Grid::deleteSelected() {
+bool Grid::deleteSelected() {
   for (std::map<size_t, std::pair<sf::Vector2f, sf::Vector2f>>::reverse_iterator iter = selections.rbegin(); iter != selections.rend(); iter++) {
     nodes.erase(nodes.begin() + iter->first);
 
@@ -349,7 +349,11 @@ void Grid::deleteSelected() {
     }
   }
 
-  selections.clear();
+  if (!selections.empty()) {
+    selections.clear();
+    return true;
+  }
+  return false;
 }
 
 bool Grid::selectArrow(const sf::Vector2f& pos) {
@@ -372,13 +376,17 @@ void Grid::deselectArrows() {
   selectedArrows.clear();
 }
 
-void Grid::deleteSelectedArrows() {
+bool Grid::deleteSelectedArrows() {
   for (std::set<size_t>::reverse_iterator iter = selectedArrows.rbegin(); iter != selectedArrows.rend(); iter++) {
     nodes[arrows[*iter].getOriginNode()].removePointing(arrows[*iter].getDestinationNode());
     arrows.erase(arrows.begin() + *iter);
   }
 
-  selectedArrows.clear();
+  if (!selectedArrows.empty()) {
+    selectedArrows.clear();
+    return true;
+  }
+  return false;
 }
 
 void Grid::addText(sf::Uint32 unicode) {

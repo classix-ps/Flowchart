@@ -256,8 +256,9 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     }
     // Delete selected nodes
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Delete) {
-      grid.deleteSelected();
-      grid.deleteSelectedArrows();
+      if (grid.deleteSelected() || grid.deleteSelectedArrows()) {
+        history.push(grid);
+      }
     }
     // Return to origin
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {

@@ -32,7 +32,8 @@ public:
   static std::array<float, 8> angleTemplate;
 
 private:
-  std::vector<sf::VertexArray> segments;
+  // segments are an idea for standardizing arrow paths in grid
+  //std::vector<sf::VertexArray> segments;
   sf::VertexArray directLine;
   sf::CircleShape head;
 

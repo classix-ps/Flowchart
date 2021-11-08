@@ -26,11 +26,11 @@ public:
   void dehighlight();
   void selectHighlighted(const sf::Vector2f& pos);
   void setSelectionsMovement();
-  void deleteSelected();
+  bool deleteSelected();
 
   bool selectArrow(const sf::Vector2f& pos);
   void deselectArrows();
-  void deleteSelectedArrows();
+  bool deleteSelectedArrows();
 
   void addText(sf::Uint32 unicode);
   void confirmText();
