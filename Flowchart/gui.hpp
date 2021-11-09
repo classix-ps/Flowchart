@@ -25,6 +25,7 @@ public:
   ButtonUse onButton(int x, int y, bool click);
   void releaseButton(int x, int y);
   void resetButtons();
+  void setDynamic(ButtonUse button);
 
 private:
   sf::RoundedRectangleShape sliderBackground;
@@ -34,4 +35,5 @@ private:
   std::array<std::shared_ptr<sf::Texture>, 10> toolbarTextures;
   std::map<ButtonUse, gui::SpriteButton> dynamic;
   std::map<ButtonUse, gui::SpriteButton> clickable;
+  ButtonUse dynamicState = ButtonUse::View;
 };

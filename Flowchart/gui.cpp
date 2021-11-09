@@ -76,6 +76,8 @@ Gui::Gui(unsigned int width, unsigned int height, float zoom, float minZoom, flo
   gui::SpriteButton view(*toolbarTextures[9]);
   view.setPosition(toolbarPos.x + 4.f, toolbarPos.y + 5.f);
   dynamic.insert(std::make_pair(ButtonUse::View, view));
+
+  dynamic.at(dynamicState).onStateChanged(gui::StatePressed);
 }
 
 void Gui::draw(sf::RenderWindow& window) const {
@@ -93,7 +95,7 @@ void Gui::draw(sf::RenderWindow& window) const {
 
 bool Gui::onGui(int x, int y) const {
   for (std::map<ButtonUse, gui::SpriteButton>::const_iterator iter = dynamic.begin(); iter != dynamic.end(); iter++) {
-    if (iter->second.getState() == gui::StatePressed) {
+    if (iter->first != dynamicState && iter->second.getState() == gui::StatePressed) {
       return true;
     }
   }
@@ -134,6 +136,11 @@ ButtonUse Gui::onButton(int x, int y, bool click) {
   if (click) {
     for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = dynamic.begin(); iter != dynamic.end(); iter++) {
       if (iter->second.containsPoint(sf::Vector2f(float(x), float(y)) - iter->second.getPosition())) {
+        for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = dynamic.begin(); iter != dynamic.end(); iter++) {
+          iter->second.onStateChanged(gui::State::StateDefault);
+        }
+
+        dynamicState = iter->first;
         iter->second.onStateChanged(gui::State::StatePressed);
         return iter->first;
       }
@@ -146,11 +153,6 @@ ButtonUse Gui::onButton(int x, int y, bool click) {
     }
   }
   else {
-    for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = dynamic.begin(); iter != dynamic.end(); iter++) {
-      if (iter->second.getState() == gui::StatePressed) {
-        return ButtonUse::None;
-      }
-    }
     for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = clickable.begin(); iter != clickable.end(); iter++) {
       if (iter->second.getState() == gui::StatePressed) {
         return ButtonUse::None;
@@ -185,14 +187,6 @@ ButtonUse Gui::onButton(int x, int y, bool click) {
 }
 
 void Gui::releaseButton(int x, int y) {
-  for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = dynamic.begin(); iter != dynamic.end(); iter++) {
-    if (iter->second.containsPoint(sf::Vector2f(float(x), float(y)) - iter->second.getPosition())) {
-      iter->second.onStateChanged(gui::State::StateHovered);
-    }
-    else {
-      iter->second.onStateChanged(gui::State::StateDefault);
-    }
-  }
   for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = clickable.begin(); iter != clickable.end(); iter++) {
     if (iter->second.containsPoint(sf::Vector2f(float(x), float(y)) - iter->second.getPosition())) {
       iter->second.onStateChanged(gui::State::StateHovered);
@@ -204,10 +198,16 @@ void Gui::releaseButton(int x, int y) {
 }
 
 void Gui::resetButtons() {
-  for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = dynamic.begin(); iter != dynamic.end(); iter++) {
-    iter->second.onStateChanged(gui::StateDefault);
-  }
   for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = clickable.begin(); iter != clickable.end(); iter++) {
     iter->second.onStateChanged(gui::StateDefault);
   }
+}
+
+void Gui::setDynamic(ButtonUse button) {
+  for (std::map<ButtonUse, gui::SpriteButton>::iterator iter = dynamic.begin(); iter != dynamic.end(); iter++) {
+    iter->second.onStateChanged(gui::State::StateDefault);
+  }
+
+  dynamicState = button;
+  dynamic.at(dynamicState).onStateChanged(gui::StatePressed);
 }

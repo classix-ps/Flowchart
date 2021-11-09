@@ -167,6 +167,30 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
         }
         state = State::View;
       }
+      else if (state == State::Select) {
+        selecting = false;
+        if (gui.onGui(mousePosPx.x, mousePosPx.y)) {
+          window.setMouseCursor(cursorDefault);
+          grid.dehighlight();
+          gui.onButton(mousePosPx.x, mousePosPx.y, false);
+        }
+        else {
+          hover(globalPos);
+        }
+        state = State::View;
+      }
+      else if (state == State::Text) {
+        if (gui.onGui(mousePosPx.x, mousePosPx.y)) {
+          window.setMouseCursor(cursorDefault);
+          grid.dehighlight();
+          gui.onButton(mousePosPx.x, mousePosPx.y, false);
+        }
+        else {
+          hover(globalPos);
+        }
+        gui.setDynamic(ButtonUse::View);
+        state = State::View;
+      }
     }
   }
   // Save
@@ -205,6 +229,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
           state = State::MoveNode;
         }
         else {
+          gui.setDynamic(ButtonUse::Text);
           state = State::Text;
         }
       }
@@ -221,6 +246,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
       grid.deselect(true);
       grid.deselectArrows();
       hoverNodeOutline(globalPos);
+      gui.setDynamic(ButtonUse::Add);
       state = State::Add;
     }
     // Enter connect state
@@ -272,6 +298,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
   {
     // Enter view state
     if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::E) {
+      gui.setDynamic(ButtonUse::View);
       state = State::View;
       hover(globalPos);
     }
@@ -452,6 +479,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
       grid.confirmText();
       hover(globalPos);
+      gui.setDynamic(ButtonUse::View);
       state = State::View;
       history.push(grid);
     }
@@ -471,14 +499,16 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
         if (action != ButtonUse::None) {
           grid.confirmText();
           hover(globalPos);
+          gui.setDynamic(ButtonUse::View);
           state = State::View;
           history.push(grid);
 
-          handleAction(action); // TODO: Make sure this is right
+          handleAction(action);
         }
         else if (gui.onSlider(event.mouseButton.x, event.mouseButton.y)) {
           grid.confirmText();
           hover(globalPos);
+          gui.setDynamic(ButtonUse::View);
           state = State::Zoom;
           history.push(grid);
         }
@@ -486,6 +516,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
       else {
         grid.confirmText();
         hover(globalPos);
+        gui.setDynamic(ButtonUse::View);
         state = State::View;
       }
     }
@@ -544,16 +575,18 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
 }
 
 void WindowManager::handleAction(ButtonUse action) {
-  // TODO: Dont forget to push to history{ Add, Confirm, Del, Text, Menu, Quit, Random, Save, View, None }
   switch (action) {
   case ButtonUse::View:
+    gui.setDynamic(ButtonUse::View);
     state = State::View;
     break;
   case ButtonUse::Add:
+    gui.setDynamic(ButtonUse::Add);
     state = State::Add;
     break;
   case ButtonUse::Text:
-    
+    gui.setDynamic(ButtonUse::Text);
+    // TODO
     break;
   case ButtonUse::Confirm:
     if (state == State::Text) {
