@@ -11,7 +11,7 @@ WindowManager::WindowManager(unsigned int width, unsigned int height) : window{ 
   
   // Icon
   sf::Image icon;
-  icon.loadFromFile(path + "icon.png");
+  icon.loadFromFile(path + "icons/icon2.png");
   window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
   // Cursors
@@ -183,7 +183,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
       if (gui.onGui(event.mouseButton.x, event.mouseButton.y)) {
         ButtonUse action = gui.onButton(event.mouseButton.x, event.mouseButton.y, true);
         if (action != ButtonUse::None) {
-
+          handleAction(action);
         }
         else if (gui.onSlider(event.mouseButton.x, event.mouseButton.y)) {
           state = State::Zoom;
@@ -225,13 +225,14 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     }
     // Enter connect state
     else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
-      grid.deselect(true);
       if (grid.startArrow(globalPos)) {
+        grid.deselect(true);
         window.setMouseCursor(cursorCrosshair);
         state = State::Connect;
       }
       else {
         if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+          grid.deselect(true);
           grid.deselectArrows();
         }
         grid.selectArrow(globalPos);
@@ -279,7 +280,7 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
       if (gui.onGui(event.mouseButton.x, event.mouseButton.y)) {
         ButtonUse action = gui.onButton(event.mouseButton.x, event.mouseButton.y, true);
         if (action != ButtonUse::None) {
-
+          handleAction(action);
         }
         else if (gui.onSlider(event.mouseButton.x, event.mouseButton.y)) {
           previouslyAdding = true;
@@ -472,6 +473,8 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
           hover(globalPos);
           state = State::View;
           history.push(grid);
+
+          handleAction(action); // TODO: Make sure this is right
         }
         else if (gui.onSlider(event.mouseButton.x, event.mouseButton.y)) {
           grid.confirmText();
@@ -505,17 +508,18 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
     if (event.type == sf::Event::MouseButtonReleased) {
       gui.releaseSlider(event.mouseButton.x, event.mouseButton.y);
       if (previouslyAdding) {
-        state = State::Add;
-        if (!gui.onGui(mousePosPx.x, mousePosPx.y)) {
+        if (gui.onGui(event.mouseButton.x, event.mouseButton.y)) {
+          gui.onButton(event.mouseButton.x, event.mouseButton.y, false);
+        }
+        else {
           hoverNodeOutline(globalPos);
         }
+        state = State::Add;
         previouslyAdding = false;
       }
       else {
-        if (gui.onGui(event.mouseMove.x, event.mouseMove.y)) {
-          window.setMouseCursor(cursorDefault);
-          grid.dehighlight();
-          gui.onButton(event.mouseMove.x, event.mouseMove.y, false);
+        if (gui.onGui(event.mouseButton.x, event.mouseButton.y)) {
+          gui.onButton(event.mouseButton.x, event.mouseButton.y, false);
         }
         else {
           hover(globalPos);
@@ -537,4 +541,40 @@ sf::Vector2i WindowManager::handleEvent(const sf::Event& event) {
   }
 
   return mousePosPx;
+}
+
+void WindowManager::handleAction(ButtonUse action) {
+  // TODO: Dont forget to push to history{ Add, Confirm, Del, Text, Menu, Quit, Random, Save, View, None }
+  switch (action) {
+  case ButtonUse::View:
+    state = State::View;
+    break;
+  case ButtonUse::Add:
+    state = State::Add;
+    break;
+  case ButtonUse::Text:
+    
+    break;
+  case ButtonUse::Confirm:
+    if (state == State::Text) {
+      grid.confirmText();
+    }
+    break;
+  case ButtonUse::Del:
+    grid.deleteSelected();
+    grid.deleteSelectedArrows();
+    break;
+  case ButtonUse::Random:
+    // TODO
+    break;
+  case ButtonUse::Save:
+    grid.save();
+    break;
+  case ButtonUse::Quit:
+    window.close();
+    break;
+  case ButtonUse::Menu:
+    // TODO
+    break;
+  }
 }

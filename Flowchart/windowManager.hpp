@@ -50,4 +50,5 @@ private:
   void hoverNodeOutline(const sf::Vector2f& pos);
 
   sf::Vector2i handleEvent(const sf::Event& event);
+  void handleAction(ButtonUse action);
 };
