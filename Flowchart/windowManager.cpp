@@ -17,7 +17,7 @@ WindowManager::WindowManager(unsigned int width, unsigned int height) : window{ 
   // Cursors
   sf::Image cursorDefaultImg;
   cursorDefaultImg.loadFromFile(path + "cursors/default.png");
-  cursorDefault.loadFromPixels(cursorDefaultImg.getPixelsPtr(), cursorDefaultImg.getSize(), sf::Vector2u(8, 9));
+  cursorDefault.loadFromPixels(cursorDefaultImg.getPixelsPtr(), cursorDefaultImg.getSize(), sf::Vector2u(8, 8));
 
   sf::Image cursorPointerImg;
   cursorPointerImg.loadFromFile(path + "cursors/pointer.png");

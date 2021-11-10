@@ -20,23 +20,49 @@ void Arrow::draw(sf::RenderWindow& window) const {
   }
 }
 
+bool sameSide(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f a, sf::Vector2f b) {
+  sf::Vector2f ls = b - a;
+  sf::Vector2f l1 = p1 - a;
+  sf::Vector2f l2 = p2 - a;
+  float cp1 = ls.x * l1.y - ls.y * l1.x;
+  float cp2 = ls.x * l2.y - ls.y * l2.x;
+  return cp1 * cp2 >= 0;
+}
+
 bool Arrow::onArrow(const sf::Vector2f& pos) {
+  sf::Vector2f delta = destination - origin;
+
   if (directLine.getBounds().contains(pos)) {
-    sf::Vector2f delta = destination - origin;
-
     float theta = atan2(delta.y, delta.x);
+    float thickness = abs(0.75f * Node::fieldTmplt.getOutlineThickness() / cos(theta));
 
-    float vert = abs(0.75f * Node::fieldTmplt.getOutlineThickness() / cos(theta));
+    if (delta.x == 0.f) {
+      if (pos.x > destination.y - thickness && pos.x < destination.x + thickness) {
+        return true;
+      }
+    }
 
     float m = delta.y / delta.x;
 
     float lineCenter = origin.y + m * (pos.x - origin.x);
-    if (pos.y > lineCenter - vert && pos.y < lineCenter + vert) {
+    if (pos.y > lineCenter - thickness && pos.y < lineCenter + thickness) {
       return true;
     }
   }
   if (head.getGlobalBounds().contains(pos)) {
+    float length = sqrt(delta.x * delta.x + delta.y * delta.y);
+    sf::Vector2f deltaNorm = delta / length;
+    sf::Vector2f deltaNormPerp(-deltaNorm.y, deltaNorm.x);
 
+    sf::Vector2f v1 = head.getPosition();
+    sf::Vector2f baseCenter = v1 - head.getRadius() * 1.5f * deltaNorm;
+    sf::Vector2f baseHalf = head.getRadius() * 0.5f * sqrt(3.f) * deltaNormPerp;
+    sf::Vector2f v2 = baseCenter + baseHalf * 0.8f;
+    sf::Vector2f v3 = baseCenter - baseHalf * 0.8f;
+
+    if (sameSide(pos, v1, v2, v3) && sameSide(pos, v2, v1, v3) && sameSide(pos, v3, v1, v2)) {
+      return true;
+    }
   }
   return false;
 }
